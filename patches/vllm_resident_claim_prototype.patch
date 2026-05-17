@@ -1,0 +1,841 @@
+diff --git a/vllm/v1/core/block_pool.py b/vllm/v1/core/block_pool.py
+index 4b62d2a..1480c4b 100644
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import os
+ from collections.abc import Iterable, Sequence
+ from typing import Any
+ 
+@@ -12,6 +13,13 @@ from vllm.distributed.kv_events import (
+ )
+ from vllm.logger import init_logger
+ from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
++from vllm.v1.core.kv_residency_telemetry import (
++    _block_hash_to_str,
++    emit_kv_residency_event,
++    hard_exclude_protected_residents_enabled,
++    kv_residency_telemetry_enabled,
++    resident_claim_fields_for_request,
++)
+ from vllm.v1.core.kv_cache_utils import (
+     BlockHash,
+     BlockHashList,
+@@ -179,6 +187,247 @@ class BlockPool:
+         self.kv_event_queue: list[KVCacheEvent] = []
+ 
+         self.metrics_collector = metrics_collector
++        self.kv_residency_protected_block_ids: set[int] = set()
++        self.kv_residency_claims: dict[str, dict[str, Any]] = {}
++        self.kv_residency_allocation_epoch = 0
++
++    @staticmethod
++    def _kv_residency_int_field(value: Any, default: int = 0) -> int:
++        if value is None:
++            return default
++        try:
++            return int(value)
++        except (TypeError, ValueError):
++            return default
++
++    def _kv_residency_protected_claim_records(self) -> list[dict[str, Any]]:
++        records: list[dict[str, Any]] = []
++        for claim in self.kv_residency_claims.values():
++            if claim.get("status") != "protected":
++                continue
++            block_ids = set(claim.get("block_ids", set()))
++            threshold = self._kv_residency_int_field(
++                claim.get("useful_threshold_blocks")
++            )
++            records.append(
++                {
++                    "claim_id": claim.get("claim_id"),
++                    "prefix_id": claim.get("prefix_id"),
++                    "protection_mode": claim.get("protection_mode"),
++                    "resident_blocks_materialized": len(block_ids),
++                    "resident_blocks_required": threshold,
++                    "useful_threshold_blocks": threshold,
++                    "predicate": "leading_prefix_at_least",
++                    "predicate_materialized": (
++                        True if threshold == 0 else len(block_ids) >= threshold
++                    ),
++                }
++            )
++        return records
++
++    def kv_residency_conflict_fields(
++        self,
++        active_live_blocks_required: int,
++        free_blocks_before_allocate: int | None = None,
++    ) -> dict[str, Any]:
++        """Return claim-level attribution fields for active/resident conflicts."""
++
++        protected_claims = self._kv_residency_protected_claim_records()
++        protected_resident_blocks = len(self.kv_residency_protected_block_ids)
++        usable_blocks = self.num_gpu_blocks - 1
++        shortfall = max(
++            0, protected_resident_blocks + active_live_blocks_required - usable_blocks
++        )
++        free_blocks = (
++            self.get_num_free_blocks()
++            if free_blocks_before_allocate is None
++            else free_blocks_before_allocate
++        )
++        return {
++            "blocking_claim_ids": sorted(
++                str(claim["claim_id"])
++                for claim in protected_claims
++                if claim.get("claim_id") is not None
++            ),
++            "blocking_prefix_ids": sorted(
++                str(claim["prefix_id"])
++                for claim in protected_claims
++                if claim.get("prefix_id") is not None
++            ),
++            "protected_resident_blocks": protected_resident_blocks,
++            "protected_resident_claims": protected_claims,
++            "resident_plus_active_blocks": (
++                protected_resident_blocks + active_live_blocks_required
++            ),
++            "capacity_shortfall_blocks": shortfall,
++            "feasibility": (
++                "infeasible_preserve_resident_and_active"
++                if shortfall > 0
++                else "feasible_preserve_resident_and_active"
++            ),
++            "free_blocks_before_allocate": free_blocks,
++        }
++
++    def _kv_residency_register_claim_block(
++        self, block_id: int, claim_fields: dict[str, Any]
++    ) -> None:
++        claim_id = claim_fields.get("claim_id")
++        if claim_id is None or not claim_fields.get("is_protected_resident"):
++            return
++
++        self.kv_residency_protected_block_ids.add(block_id)
++        claim = self.kv_residency_claims.get(claim_id)
++        if claim is None:
++            ttl = os.environ.get("VLLM_KV_RESIDENCY_CLAIM_TTL_ALLOCATIONS")
++            claim = {
++                "claim_id": claim_id,
++                "prefix_id": claim_fields.get("prefix_id"),
++                "protection_mode": claim_fields.get("protection_mode"),
++                "useful_threshold_blocks": claim_fields.get(
++                    "useful_threshold_blocks"
++                ),
++                "predicted_value": claim_fields.get("predicted_value"),
++                "confidence": claim_fields.get("confidence"),
++                "block_ids": set(),
++                "status": "protected",
++                "materialized_emitted": False,
++                "harm_emitted": False,
++                "expires_at_allocation_epoch": (
++                    self.kv_residency_allocation_epoch + int(ttl) if ttl else None
++                ),
++            }
++            self.kv_residency_claims[claim_id] = claim
++            emit_kv_residency_event(
++                "resident_claim_accepted",
++                request_id=str(claim_fields.get("prefix_id") or claim_id),
++                claim_id=claim_id,
++                prefix_id=claim_fields.get("prefix_id"),
++                resident_blocks_required=claim_fields.get(
++                    "useful_threshold_blocks"
++                ),
++                useful_threshold_blocks=claim_fields.get(
++                    "useful_threshold_blocks"
++                ),
++                predicted_value=claim_fields.get("predicted_value"),
++                confidence=claim_fields.get("confidence"),
++                protection_mode=claim_fields.get("protection_mode"),
++            )
++        claim["block_ids"].add(block_id)
++        threshold = self._kv_residency_int_field(
++            claim.get("useful_threshold_blocks")
++        )
++        if (
++            threshold > 0
++            and not claim.get("materialized_emitted")
++            and len(claim["block_ids"]) >= threshold
++        ):
++            claim["materialized_emitted"] = True
++            emit_kv_residency_event(
++                "resident_claim_materialized",
++                request_id=str(claim.get("prefix_id") or claim_id),
++                claim_id=claim_id,
++                prefix_id=claim.get("prefix_id"),
++                resident_blocks_materialized=len(claim["block_ids"]),
++                resident_blocks_required=threshold,
++                useful_threshold_blocks=threshold,
++                predicate="leading_prefix_at_least",
++                predicate_materialized=True,
++                protection_mode=claim.get("protection_mode"),
++            )
++
++    def _kv_residency_relax_claim(self, claim_id: str, reason: str) -> None:
++        claim = self.kv_residency_claims.get(claim_id)
++        if claim is None or claim["status"] != "protected":
++            return
++
++        block_ids = set(claim["block_ids"])
++        self.kv_residency_protected_block_ids.difference_update(block_ids)
++        claim["status"] = "relaxed"
++        event_name = "resident_claim_relaxed"
++        if reason == "claim_expired":
++            event_name = "resident_claim_expired"
++            claim["status"] = "expired"
++        elif reason == "demote_on_conflict":
++            event_name = "resident_claim_demoted"
++            claim["status"] = "demoted"
++        emit_kv_residency_event(
++            event_name,
++            request_id=str(claim.get("prefix_id") or claim_id),
++            claim_id=claim_id,
++            prefix_id=claim.get("prefix_id"),
++            resident_blocks_materialized=len(block_ids),
++            protection_mode=claim.get("protection_mode"),
++            arbiter_action=reason,
++        )
++
++    def _kv_residency_expire_claims(self) -> None:
++        for claim_id, claim in list(self.kv_residency_claims.items()):
++            expires_at = claim.get("expires_at_allocation_epoch")
++            if (
++                claim["status"] == "protected"
++                and expires_at is not None
++                and self.kv_residency_allocation_epoch >= expires_at
++            ):
++                self._kv_residency_relax_claim(claim_id, "claim_expired")
++
++    def _kv_residency_demote_all_claims(self, reason: str) -> None:
++        for claim_id in list(self.kv_residency_claims):
++            self._kv_residency_relax_claim(claim_id, reason)
++
++    def _kv_residency_cleanup_harmed_block(self, block_id: int) -> None:
++        harmed_claim_ids = [
++            claim_id
++            for claim_id, claim in self.kv_residency_claims.items()
++            if block_id in claim["block_ids"]
++        ]
++        for claim_id in harmed_claim_ids:
++            claim = self.kv_residency_claims[claim_id]
++            status_before = claim.get("status")
++            before_count = len(claim["block_ids"])
++            claim["block_ids"].discard(block_id)
++            self.kv_residency_protected_block_ids.discard(block_id)
++            threshold = self._kv_residency_int_field(
++                claim.get("useful_threshold_blocks")
++            )
++            predicate_was_true = threshold > 0 and before_count >= threshold
++            predicate_now_false = threshold > 0 and len(claim["block_ids"]) < threshold
++            if (
++                status_before == "protected"
++                and not claim.get("harm_emitted")
++                and predicate_was_true
++                and predicate_now_false
++            ):
++                claim["harm_emitted"] = True
++                claim["status"] = "harmed"
++                emit_kv_residency_event(
++                    "resident_claim_harmed",
++                    request_id=str(claim.get("prefix_id") or claim_id),
++                    claim_id=claim_id,
++                    prefix_id=claim.get("prefix_id"),
++                    physical_block_id=block_id,
++                    resident_blocks_materialized=len(claim["block_ids"]),
++                    resident_blocks_required=threshold,
++                    useful_threshold_blocks=threshold,
++                    predicate="leading_prefix_at_least",
++                    predicate_before=True,
++                    predicate_after=False,
++                    protection_mode=claim.get("protection_mode"),
++                    value_lost=claim.get("predicted_value"),
++                )
++                continue
++
++            emit_kv_residency_event(
++                "resident_claim_block_lost_after_release",
++                request_id=str(claim.get("prefix_id") or claim_id),
++                claim_id=claim_id,
++                prefix_id=claim.get("prefix_id"),
++                physical_block_id=block_id,
++                resident_blocks_materialized=len(claim["block_ids"]),
++                resident_blocks_required=threshold,
++                useful_threshold_blocks=threshold,
++                claim_status=status_before,
++                protection_mode=claim.get("protection_mode"),
++            )
+ 
+     def get_cached_block(
+         self, block_hash: BlockHash, kv_cache_group_ids: list[int]
+@@ -269,6 +518,18 @@ class BlockPool:
+             )
+             blk.block_hash = block_hash_with_group_id
+             self.cached_block_hash_to_block.insert(block_hash_with_group_id, blk)
++            claim_fields = resident_claim_fields_for_request(request.request_id)
++            self._kv_residency_register_claim_block(blk.block_id, claim_fields)
++            if kv_residency_telemetry_enabled():
++                emit_kv_residency_event(
++                    "resident_block_materialized",
++                    request_id=request.request_id,
++                    logical_block_position=num_cached_blocks + i,
++                    physical_block_id=blk.block_id,
++                    block_hash=_block_hash_to_str(block_hash_with_group_id),
++                    ref_count=blk.ref_cnt,
++                    **claim_fields,
++                )
+             if new_hashes is not None:
+                 new_hashes.append(maybe_convert_block_hash(block_hash))
+ 
+@@ -317,7 +578,9 @@ class BlockPool:
+                 )
+             )
+ 
+-    def get_new_blocks(self, num_blocks: int) -> list[KVCacheBlock]:
++    def get_new_blocks(
++        self, num_blocks: int, request_id: str | None = None
++    ) -> list[KVCacheBlock]:
+         """Get new blocks from the free block pool.
+ 
+         Note that we do not check block cache in this function.
+@@ -328,21 +591,72 @@ class BlockPool:
+         Returns:
+             A list of new block.
+         """
+-        if num_blocks > self.get_num_free_blocks():
+-            raise ValueError(f"Cannot get {num_blocks} free blocks from the pool")
+-
+-        ret: list[KVCacheBlock] = self.free_block_queue.popleft_n(num_blocks)
++        self.kv_residency_allocation_epoch += 1
++        self._kv_residency_expire_claims()
++
++        if hard_exclude_protected_residents_enabled():
++            free_blocks = self.free_block_queue.get_all_free_blocks()
++            allocatable = [
++                block
++                for block in free_blocks
++                if block.block_id not in self.kv_residency_protected_block_ids
++            ]
++            if num_blocks > len(allocatable):
++                if os.environ.get("VLLM_KV_RESIDENCY_ON_CONFLICT") == "demote":
++                    self._kv_residency_demote_all_claims("demote_on_conflict")
++                    allocatable = self.free_block_queue.get_all_free_blocks()
++                if num_blocks > len(allocatable):
++                    raise ValueError(
++                        f"Cannot get {num_blocks} free blocks from the pool"
++                    )
++            ret = allocatable[:num_blocks]
++            for block in ret:
++                self.free_block_queue.remove(block)
++        else:
++            if num_blocks > self.get_num_free_blocks():
++                raise ValueError(f"Cannot get {num_blocks} free blocks from the pool")
++            ret = self.free_block_queue.popleft_n(num_blocks)
++        telemetry_enabled = kv_residency_telemetry_enabled()
+ 
+         # In order to only iterate the list once, we duplicated code a bit
+         if self.enable_caching:
+-            for block in ret:
+-                self._maybe_evict_cached_block(block)
++            for free_queue_rank, block in enumerate(ret):
++                block_hash = block.block_hash
++                evicted = self._maybe_evict_cached_block(block)
++                if telemetry_enabled:
++                    emit_kv_residency_event(
++                        "allocation_victim_selected",
++                        request_id=request_id or "unknown",
++                        physical_block_id=block.block_id,
++                        block_hash=_block_hash_to_str(block_hash),
++                        ref_count=block.ref_cnt,
++                        free_queue_rank=free_queue_rank,
++                        is_protected_resident=(
++                            block.block_id in self.kv_residency_protected_block_ids
++                        ),
++                        victim_reason=(
++                            "cached_prefix_reuse" if evicted else "free_uncached"
++                        ),
++                    )
+                 assert block.ref_cnt == 0
+                 block.ref_cnt += 1
+                 if self.metrics_collector:
+                     self.metrics_collector.on_block_allocated(block)
+         else:
+-            for block in ret:
++            for free_queue_rank, block in enumerate(ret):
++                if telemetry_enabled:
++                    emit_kv_residency_event(
++                        "allocation_victim_selected",
++                        request_id=request_id or "unknown",
++                        physical_block_id=block.block_id,
++                        block_hash=None,
++                        ref_count=block.ref_cnt,
++                        free_queue_rank=free_queue_rank,
++                        is_protected_resident=(
++                            block.block_id in self.kv_residency_protected_block_ids
++                        ),
++                        victim_reason="free_uncached",
++                    )
+                 assert block.ref_cnt == 0
+                 block.ref_cnt += 1
+                 if self.metrics_collector:
+@@ -375,6 +689,7 @@ class BlockPool:
+             return False
+ 
+         block.reset_hash()
++        self._kv_residency_cleanup_harmed_block(block.block_id)
+ 
+         if self.enable_kv_cache_events:
+             # FIXME (Chen): Not sure whether we should return `hash_value`
+@@ -474,6 +789,8 @@ class BlockPool:
+         if self.enable_kv_cache_events:
+             self.kv_event_queue.append(AllBlocksCleared())
+ 
++        self.kv_residency_protected_block_ids.clear()
++        self.kv_residency_claims.clear()
+         return True
+ 
+     def get_num_free_blocks(self) -> int:
+@@ -482,7 +799,13 @@ class BlockPool:
+         Returns:
+             The number of free blocks.
+         """
+-        return self.free_block_queue.num_free_blocks
++        if not hard_exclude_protected_residents_enabled():
++            return self.free_block_queue.num_free_blocks
++        return sum(
++            1
++            for block in self.free_block_queue.get_all_free_blocks()
++            if block.block_id not in self.kv_residency_protected_block_ids
++        )
+ 
+     def get_usage(self) -> float:
+         """Get the KV cache usage.
+diff --git a/vllm/v1/core/kv_cache_manager.py b/vllm/v1/core/kv_cache_manager.py
+index dcec5e0..ec00343 100644
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -4,12 +4,16 @@
+ import itertools
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+-from typing import Literal, overload
++from typing import Any, Literal, overload
+ 
+ from vllm.distributed.kv_events import KVCacheEvent
+ from vllm.logger import init_logger
+ from vllm.v1.core.kv_cache_coordinator import get_kv_cache_coordinator
+ from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
++from vllm.v1.core.kv_residency_telemetry import (
++    deny_future_reuse_for_request,
++    emit_kv_residency_event,
++)
+ from vllm.v1.core.kv_cache_utils import KVCacheBlock
+ from vllm.v1.kv_cache_interface import KVCacheConfig
+ from vllm.v1.metrics.stats import PrefixCacheStats
+@@ -142,6 +146,7 @@ class KVCacheManager:
+         self.num_kv_cache_groups = len(kv_cache_config.kv_cache_groups)
+         self.block_pool = self.coordinator.block_pool
+         self.kv_cache_config = kv_cache_config
++        self.kv_residency_last_full_sequence_gate: dict[str, Any] = {}
+ 
+         # Pre-constructed KVCacheBlocks with no blocks, callers should use this
+         # via create_kv_cache_blocks instead of creating new ones to avoid GC
+@@ -252,7 +257,30 @@ class KVCacheManager:
+             num_tokens_main_model=full_num_tokens,
+         )
+ 
+-        return num_blocks_to_allocate <= self.block_pool.get_num_free_blocks()
++        free_blocks_before_allocate = self.block_pool.get_num_free_blocks()
++        can_fit = num_blocks_to_allocate <= free_blocks_before_allocate
++        conflict_fields = self.block_pool.kv_residency_conflict_fields(
++            num_blocks_to_allocate,
++            free_blocks_before_allocate,
++        )
++        self.kv_residency_last_full_sequence_gate = {
++            "num_blocks_to_allocate": num_blocks_to_allocate,
++            "free_blocks_before_allocate": free_blocks_before_allocate,
++            "can_fit": can_fit,
++            **conflict_fields,
++        }
++        if not can_fit:
++            emit_kv_residency_event(
++                "active_request_deferred",
++                request_id=request.request_id,
++                active_live_blocks_required=num_blocks_to_allocate,
++                active_live_blocks_current=0,
++                future_reuse_requested=self.enable_caching,
++                future_reuse_admitted=False,
++                arbiter_action="scheduler_full_sequence_gate",
++                **conflict_fields,
++            )
++        return can_fit
+ 
+     def allocate_slots(
+         self,
+@@ -384,10 +412,36 @@ class KVCacheManager:
+             num_tokens_main_model=num_tokens_main_model,
+         )
+ 
+-        if num_blocks_to_allocate > self.block_pool.get_num_free_blocks():
++        free_blocks_before_allocate = self.block_pool.get_num_free_blocks()
++        if num_blocks_to_allocate > free_blocks_before_allocate:
+             # Cannot allocate new blocks
++            conflict_fields = self.block_pool.kv_residency_conflict_fields(
++                num_blocks_to_allocate,
++                free_blocks_before_allocate,
++            )
++            emit_kv_residency_event(
++                "active_request_deferred",
++                request_id=request.request_id,
++                active_live_blocks_required=num_blocks_to_allocate,
++                active_live_blocks_current=0,
++                future_reuse_requested=self.enable_caching,
++                future_reuse_admitted=False,
++                arbiter_action="native_allocate_slots_none",
++                **conflict_fields,
++            )
+             return None
+ 
++        emit_kv_residency_event(
++            "active_request_admitted",
++            request_id=request.request_id,
++            active_live_blocks_required=num_blocks_to_allocate,
++            active_live_blocks_current=num_blocks_to_allocate,
++            future_reuse_requested=self.enable_caching,
++            future_reuse_admitted=bool(self.enable_caching and not delay_cache_blocks),
++            arbiter_action="native_allocate_slots",
++            free_blocks_before_allocate=free_blocks_before_allocate,
++        )
++
+         if (
+             new_computed_block_list is not self.empty_kv_cache_blocks.blocks
+             or num_external_computed_tokens > 0
+@@ -422,7 +476,30 @@ class KVCacheManager:
+             total_computed_tokens + num_new_tokens,
+             request.num_tokens,
+         )
++        if deny_future_reuse_for_request(request.request_id):
++            emit_kv_residency_event(
++                "future_reuse_denied",
++                request_id=request.request_id,
++                active_live_blocks_required=num_blocks_to_allocate,
++                active_live_blocks_current=num_blocks_to_allocate,
++                future_reuse_requested=True,
++                future_reuse_admitted=False,
++                arbiter_action="write_no_admit",
++                num_tokens_to_cache=num_tokens_to_cache,
++            )
++            return self.create_kv_cache_blocks(new_blocks)
++
+         self.coordinator.cache_blocks(request, num_tokens_to_cache)
++        emit_kv_residency_event(
++            "future_reuse_admitted",
++            request_id=request.request_id,
++            active_live_blocks_required=num_blocks_to_allocate,
++            active_live_blocks_current=num_blocks_to_allocate,
++            future_reuse_requested=True,
++            future_reuse_admitted=True,
++            arbiter_action="native_cache_blocks",
++            num_tokens_to_cache=num_tokens_to_cache,
++        )
+ 
+         return self.create_kv_cache_blocks(new_blocks)
+ 
+diff --git a/vllm/v1/core/kv_residency_telemetry.py b/vllm/v1/core/kv_residency_telemetry.py
+new file mode 100644
+index 0000000..6491179
+--- /dev/null
++++ b/vllm/v1/core/kv_residency_telemetry.py
+@@ -0,0 +1,118 @@
++# SPDX-License-Identifier: Apache-2.0
++# SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++"""Env-gated JSONL telemetry for active/resident KV residency probes."""
++
++import json
++import os
++import time
++from typing import Any
++
++from vllm.v1.core.kv_cache_utils import BlockHashWithGroupId
++
++_TELEMETRY_PATH_ENV = "VLLM_KV_RESIDENCY_TELEMETRY_PATH"
++_NO_ADMIT_REQUEST_IDS_ENV = "VLLM_KV_RESIDENCY_NO_ADMIT_REQUEST_IDS"
++_RESIDENT_CLAIM_REQUEST_IDS_ENV = "VLLM_KV_RESIDENCY_CLAIM_REQUEST_IDS"
++_ENFORCE_PROTECTION_ENV = "VLLM_KV_RESIDENCY_ENFORCE_PROTECTION"
++
++
++def _block_hash_to_str(block_hash: BlockHashWithGroupId | None) -> str | None:
++    if block_hash is None:
++        return None
++    return repr(block_hash)
++
++
++def kv_residency_telemetry_enabled() -> bool:
++    return bool(os.environ.get(_TELEMETRY_PATH_ENV))
++
++
++def hard_exclude_protected_residents_enabled() -> bool:
++    return os.environ.get(_ENFORCE_PROTECTION_ENV) == "hard_exclude"
++
++
++def _request_id_matches(request_id: str, expected_id: str) -> bool:
++    return request_id == expected_id or request_id.startswith(f"{expected_id}-")
++
++
++def deny_future_reuse_for_request(request_id: str) -> bool:
++    request_ids = {
++        item.strip()
++        for item in os.environ.get(_NO_ADMIT_REQUEST_IDS_ENV, "").split(",")
++        if item.strip()
++    }
++    return any(_request_id_matches(request_id, item) for item in request_ids)
++
++
++def resident_claim_fields_for_request(request_id: str) -> dict[str, Any]:
++    request_ids = {
++        item.strip()
++        for item in os.environ.get(_RESIDENT_CLAIM_REQUEST_IDS_ENV, "").split(",")
++        if item.strip()
++    }
++    if not any(_request_id_matches(request_id, item) for item in request_ids):
++        return {
++            "claim_id": None,
++            "prefix_id": request_id,
++            "is_protected_resident": False,
++        }
++
++    return {
++        "claim_id": os.environ.get(
++            "VLLM_KV_RESIDENCY_CLAIM_ID", f"claim:{request_id}"
++        ),
++        "prefix_id": os.environ.get("VLLM_KV_RESIDENCY_PREFIX_ID", request_id),
++        "is_protected_resident": True,
++        "useful_threshold_blocks": int(
++            os.environ.get("VLLM_KV_RESIDENCY_USEFUL_THRESHOLD_BLOCKS", "0")
++        ),
++        "predicted_value": float(
++            os.environ.get("VLLM_KV_RESIDENCY_PREDICTED_VALUE", "1.0")
++        ),
++        "confidence": float(os.environ.get("VLLM_KV_RESIDENCY_CONFIDENCE", "1.0")),
++        "protection_mode": os.environ.get(
++            "VLLM_KV_RESIDENCY_PROTECTION_MODE", "hard_exclude"
++        ),
++    }
++
++
++def emit_kv_residency_event(
++    event: str,
++    request_id: str,
++    **fields: Any,
++) -> None:
++    """Append one JSONL event when residency telemetry is enabled.
++
++    This hook is deliberately observational: it should never affect allocator
++    control flow, and failures to emit telemetry are surfaced only when the
++    feature is explicitly enabled by setting the output path.
++    """
++
++    telemetry_path = os.environ.get(_TELEMETRY_PATH_ENV)
++    if not telemetry_path:
++        return
++
++    record = {
++        "schema_version": 1,
++        "timestamp_ns": time.time_ns(),
++        "run_id": os.environ.get("VLLM_KV_RESIDENCY_RUN_ID", "unset"),
++        "event": event,
++        "request_id": request_id,
++        "claim_id": fields.pop("claim_id", None),
++        "prefix_id": fields.pop("prefix_id", None),
++        "policy": os.environ.get("VLLM_KV_RESIDENCY_POLICY", "native"),
++        "usable_blocks": int(os.environ.get("VLLM_KV_RESIDENCY_USABLE_BLOCKS", "0")),
++    }
++    record.update(fields)
++
++    with open(telemetry_path, "a", encoding="utf-8") as f:
++        f.write(json.dumps(record, sort_keys=True, separators=(",", ":")))
++        f.write("\n")
++
++
++__all__ = [
++    "_block_hash_to_str",
++    "deny_future_reuse_for_request",
++    "emit_kv_residency_event",
++    "hard_exclude_protected_residents_enabled",
++    "kv_residency_telemetry_enabled",
++    "resident_claim_fields_for_request",
++]
+diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
+index fe524cc..dcacc5f 100644
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ import itertools
++import os
+ import time
+ from collections import defaultdict, deque
+ from collections.abc import Iterable
+@@ -38,6 +39,10 @@ from vllm.v1.core.encoder_cache_manager import (
+ )
+ from vllm.v1.core.kv_cache_manager import KVCacheBlocks, KVCacheManager
+ from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
++from vllm.v1.core.kv_residency_telemetry import (
++    emit_kv_residency_event,
++    hard_exclude_protected_residents_enabled,
++)
+ from vllm.v1.core.sched.interface import PauseState, SchedulerInterface
+ from vllm.v1.core.sched.output import (
+     CachedRequestData,
+@@ -51,7 +56,12 @@ from vllm.v1.core.sched.request_queue import (
+     create_request_queue,
+ )
+ from vllm.v1.core.sched.utils import check_stop, remove_all
+-from vllm.v1.engine import EngineCoreEventType, EngineCoreOutput, EngineCoreOutputs
++from vllm.v1.engine import (
++    EngineCoreEventType,
++    EngineCoreOutput,
++    EngineCoreOutputs,
++    FinishReason,
++)
+ from vllm.v1.kv_cache_interface import AttentionSpec, KVCacheConfig
+ from vllm.v1.metrics.perf import ModelMetrics, PerfStats
+ from vllm.v1.metrics.stats import PrefixCacheStats, SchedulerStats
+@@ -173,6 +183,8 @@ class Scheduler(SchedulerInterface):
+         # requests so that they can free the cached states for those requests.
+         # This is flushed at the end of each scheduling step.
+         self.finished_req_ids: set[str] = set()
++        self.kv_residency_defer_counts: dict[str, int] = {}
++        self.kv_residency_terminal_outputs: list[EngineCoreOutput] = []
+ 
+         # Counter for requests waiting for streaming input. Used to calculate
+         # number of unfinished requests
+@@ -741,6 +753,10 @@ class Scheduler(SchedulerInterface):
+                 ):
+                     if request.has_encoder_inputs:
+                         self.encoder_cache_manager.free(request)
++                    if self._kv_residency_maybe_refuse_waiting_request(
++                        request_queue, request
++                    ):
++                        continue
+                     break
+ 
+                 new_blocks = self.kv_cache_manager.allocate_slots(
+@@ -1322,6 +1338,10 @@ class Scheduler(SchedulerInterface):
+         kv_connector_stats: KVConnectorStats | None = (
+             kv_connector_output.kv_connector_stats if kv_connector_output else None
+         )
++        if self.kv_residency_terminal_outputs:
++            for output in self.kv_residency_terminal_outputs:
++                outputs[0].append(output)
++            self.kv_residency_terminal_outputs = []
+         if kv_connector_stats and self.connector:
+             kv_stats = self.connector.get_kv_connector_stats()
+             if kv_stats:
+@@ -1555,6 +1575,66 @@ class Scheduler(SchedulerInterface):
+ 
+         return engine_core_outputs
+ 
++    def has_pending_terminal_outputs(self) -> bool:
++        return bool(self.kv_residency_terminal_outputs)
++
++    def _kv_residency_max_defer_attempts(self) -> int:
++        raw_value = os.environ.get("VLLM_KV_RESIDENCY_MAX_DEFER_ATTEMPTS", "1")
++        try:
++            return max(1, int(raw_value))
++        except ValueError:
++            return 1
++
++    def _kv_residency_maybe_refuse_waiting_request(
++        self,
++        request_queue: RequestQueue,
++        request: Request,
++    ) -> bool:
++        if not hard_exclude_protected_residents_enabled():
++            return False
++
++        request_id = request.request_id
++        defer_count = self.kv_residency_defer_counts.get(request_id, 0) + 1
++        self.kv_residency_defer_counts[request_id] = defer_count
++        if defer_count < self._kv_residency_max_defer_attempts():
++            return False
++
++        gate = self.kv_cache_manager.kv_residency_last_full_sequence_gate
++        active_live_blocks_required = int(gate.get("num_blocks_to_allocate", 0))
++        free_blocks_before_allocate = int(gate.get("free_blocks_before_allocate", 0))
++        conflict_fields = self.kv_cache_manager.block_pool.kv_residency_conflict_fields(
++            active_live_blocks_required,
++            free_blocks_before_allocate,
++        )
++        request_queue.pop_request()
++        request.status = RequestStatus.FINISHED_ERROR
++        request.stop_reason = "protected_resident_capacity_refused"
++        self._free_request(request)
++        self.kv_residency_defer_counts.pop(request_id, None)
++        emit_kv_residency_event(
++            "active_request_refused",
++            request_id=request_id,
++            active_live_blocks_required=active_live_blocks_required,
++            active_live_blocks_current=0,
++            future_reuse_requested=self.cache_config.enable_prefix_caching,
++            future_reuse_admitted=False,
++            arbiter_action="protected_resident_capacity_refused",
++            defer_attempts=defer_count,
++            **conflict_fields,
++        )
++        self.kv_residency_terminal_outputs.append(
++            EngineCoreOutput(
++                request_id=request_id,
++                new_token_ids=[],
++                finish_reason=FinishReason.ERROR,
++                stop_reason=request.stop_reason,
++                events=request.take_events(),
++                trace_headers=request.trace_headers,
++                num_cached_tokens=max(request.num_cached_tokens, 0),
++            )
++        )
++        return True
++
+     @staticmethod
+     def _is_blocked_waiting_status(status: RequestStatus) -> bool:
+         return status in (
+diff --git a/vllm/v1/core/single_type_kv_cache_manager.py b/vllm/v1/core/single_type_kv_cache_manager.py
+index fa53956..55ac715 100644
+--- a/vllm/v1/core/single_type_kv_cache_manager.py
++++ b/vllm/v1/core/single_type_kv_cache_manager.py
+@@ -206,7 +206,8 @@ class SingleTypeKVCacheManager(ABC):
+         if num_external_computed_tokens > 0:
+             # Allocate new blocks for external computed tokens.
+             allocated_blocks = self.block_pool.get_new_blocks(
+-                cdiv(num_total_computed_tokens, self.block_size) - len(req_blocks)
++                cdiv(num_total_computed_tokens, self.block_size) - len(req_blocks),
++                request_id=request_id,
+             )
+             req_blocks.extend(allocated_blocks)
+             if type(self.kv_cache_spec) is FullAttentionSpec:
+@@ -235,7 +236,9 @@ class SingleTypeKVCacheManager(ABC):
+         if num_new_blocks <= 0:
+             return []
+         else:
+-            new_blocks = self.block_pool.get_new_blocks(num_new_blocks)
++            new_blocks = self.block_pool.get_new_blocks(
++                num_new_blocks, request_id=request_id
++            )
+             req_blocks.extend(new_blocks)
+             if type(self.kv_cache_spec) is FullAttentionSpec:
+                 self.new_block_ids.extend(b.block_id for b in new_blocks)
+@@ -1003,7 +1006,9 @@ class MambaManager(SingleTypeKVCacheManager):
+                     assert num_new_blocks <= 1
+                 else:
+                     assert num_new_blocks <= self.num_speculative_blocks + 1
+-                new_blocks = self.block_pool.get_new_blocks(num_new_blocks)
++                new_blocks = self.block_pool.get_new_blocks(
++                    num_new_blocks, request_id=request_id
++                )
+                 req_blocks.extend(new_blocks)
+                 self._allocated_block_reqs.add(request_id)
+                 return req_blocks[prev_block_len:]

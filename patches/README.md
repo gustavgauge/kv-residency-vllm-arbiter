@@ -1,14 +1,12 @@
 # Patches
 
-Place vLLM patch files or patch-series notes here.
+This directory contains the vLLM prototype patch and short patch notes.
 
-Expected patch stages:
+Patch contents:
 
-1. resident claim metadata;
-2. protected resident victim exclusion or reserve;
-3. scheduler-visible active defer/refuse path;
-4. write no-admit as separate admission control;
-5. claim-level telemetry hooks;
-6. experiment harness integration.
+- `vllm_resident_claim_prototype.patch`: patch against vLLM base commit
+  `b1388b1fbf5aaef47937fabe98931211684666a6`.
+- `vllm_prototype_notes.md`: behavior boundary and evidence commands.
 
-Keep patches small enough to review one stage at a time.
+The patch is prototype-grade. It is meant to make the paper's conformance
+behavior inspectable, not to define an upstream-ready API.
