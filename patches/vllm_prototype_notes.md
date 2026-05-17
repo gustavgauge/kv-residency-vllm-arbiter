@@ -26,6 +26,13 @@ patched runtime.
 | `vllm/v1/core/sched/scheduler.py` | Turns protected-resident scheduler pressure into bounded active refusal. |
 | `vllm/v1/core/single_type_kv_cache_manager.py` | Passes request ids into block allocation calls for telemetry attribution. |
 
+The incremental patch `vllm_runtime_metadata_joinability.patch` also touches:
+
+| File | Purpose |
+|---|---|
+| `vllm/entrypoints/openai/chat_completion/serving.py` | Emits opt-in request-joinable runtime metadata JSONL for chat completions. |
+| `vllm/v1/core/kv_residency_telemetry.py` | Adds `proxy_request_id`/`runtime_request_id` to arbiter telemetry, normalizes vLLM's internal request suffix, and adds a runtime metadata sidecar writer. |
+
 ## Behavior Boundary
 
 The prototype demonstrates runtime semantics, not a production policy. It adds:
@@ -58,3 +65,22 @@ The hard-claim pressure trace should show an accepted resident claim,
 materialized useful-prefix predicate, active infeasibility, and either active
 refusal/defer or a prior claim release event. Loss after explicit demotion or
 expiry is reported as post-release block loss, not claim harm.
+
+## Runtime Metadata Joinability
+
+`vllm_runtime_metadata_joinability.patch` adds opt-in JSONL metadata for live
+OpenAI-compatible chat completions. Enable it with
+`VLLM_KV_RESIDENCY_RUNTIME_METADATA_PATH`. The patch also extends existing
+arbiter telemetry with join keys:
+
+- `proxy_request_id`
+- `runtime_request_id`
+- `event_type`
+- `event_time`
+- `runtime_name`
+- `runtime_commit`
+
+For OpenAI serving, caller-provided `request_id` becomes the proxy/runtime join
+key. Lower scheduler events may append an internal 8-hex suffix to the runtime
+request id; the telemetry helper strips that suffix when writing
+`proxy_request_id` so allocator events remain joinable to proxy traces.

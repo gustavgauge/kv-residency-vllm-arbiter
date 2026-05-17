@@ -1,0 +1,323 @@
+diff --git a/vllm/entrypoints/openai/chat_completion/serving.py b/vllm/entrypoints/openai/chat_completion/serving.py
+index 493c26d..ff094b3 100644
+--- a/vllm/entrypoints/openai/chat_completion/serving.py
++++ b/vllm/entrypoints/openai/chat_completion/serving.py
+@@ -3,6 +3,8 @@
+ 
+ import asyncio
+ import json
++import math
++import os
+ import time
+ from collections.abc import AsyncGenerator, AsyncIterator
+ from collections.abc import Sequence as GenericSequence
+@@ -77,6 +79,10 @@ from vllm.tool_parsers.mistral_tool_parser import MistralToolCall
+ from vllm.tool_parsers.utils import partial_json_loads
+ from vllm.utils.collection_utils import as_list
+ from vllm.utils.mistral import is_mistral_tokenizer
++from vllm.v1.core.kv_residency_telemetry import (
++    emit_runtime_metadata_event,
++    runtime_metadata_enabled,
++)
+ 
+ if TYPE_CHECKING:
+     from vllm.entrypoints.serve.render.serving import OpenAIServingRender
+@@ -165,6 +171,114 @@ class OpenAIServingChat(OpenAIServing):
+         self.supports_code_interpreter = False
+         self.python_tool = None
+ 
++    def _kv_runtime_block_size_tokens(self) -> int:
++        cache_config = getattr(self.engine_client.vllm_config, "cache_config", None)
++        return int(getattr(cache_config, "block_size", 0) or 0)
++
++    def _kv_runtime_tokenizer_id(self, tokenizer: TokenizerLike) -> str:
++        model_tokenizer = getattr(self.model_config, "tokenizer", None)
++        if model_tokenizer:
++            return str(model_tokenizer)
++        tokenizer_name = getattr(tokenizer, "name_or_path", None)
++        if tokenizer_name:
++            return str(tokenizer_name)
++        return getattr(tokenizer, "__class__", type(tokenizer)).__name__ or "unknown"
++
++    @staticmethod
++    def _kv_proxy_request_id(runtime_request_id: str) -> str:
++        for prefix in ("chatcmpl-", "cmpl-", "resp-"):
++            if runtime_request_id.startswith(prefix):
++                return runtime_request_id[len(prefix) :]
++        return runtime_request_id
++
++    def _emit_runtime_request_metadata(
++        self,
++        event_type: str,
++        *,
++        runtime_request_id: str,
++        model_name: str,
++        tokenizer: TokenizerLike,
++        prompt_token_count: int | None,
++        output_token_count: int | None = None,
++        metrics: Any | None = None,
++    ) -> None:
++        if not runtime_metadata_enabled():
++            return
++
++        observed_time = time.time()
++        block_size_tokens = self._kv_runtime_block_size_tokens()
++        total_tokens = (prompt_token_count or 0) + (output_token_count or 0)
++        active_live_blocks = (
++            math.ceil(total_tokens / block_size_tokens)
++            if block_size_tokens > 0 and total_tokens > 0
++            else None
++        )
++        service_start_time = getattr(metrics, "scheduled_ts", None) if metrics else None
++        first_token_time = getattr(metrics, "first_token_ts", None) if metrics else None
++        service_end_time = getattr(metrics, "last_token_ts", None) if metrics else None
++        if service_start_time == 0.0:
++            service_start_time = None
++        if first_token_time == 0.0:
++            first_token_time = None
++        if service_end_time == 0.0:
++            service_end_time = None
++        if event_type == "request_submitted" and service_start_time is None:
++            service_start_time = observed_time
++        if event_type == "request_finished" and service_end_time is None:
++            service_end_time = observed_time
++        service_timing_quality = (
++            "runtime_observed_scheduler_metrics"
++            if metrics is not None
++            and any(
++                value is not None
++                for value in (service_start_time, first_token_time, service_end_time)
++            )
++            else "runtime_observed_openai_serving_event_time"
++            if service_start_time is not None or service_end_time is not None
++            else "missing"
++        )
++
++        runtime_commit_observed = bool(os.environ.get("VLLM_KV_RESIDENCY_RUNTIME_COMMIT"))
++        tokenizer_id = self._kv_runtime_tokenizer_id(tokenizer)
++        emit_runtime_metadata_event(
++            event_type,
++            proxy_request_id=self._kv_proxy_request_id(runtime_request_id),
++            runtime_request_id=runtime_request_id,
++            model_id=model_name,
++            tokenizer_id=tokenizer_id,
++            block_size_tokens=block_size_tokens or None,
++            kv_format="vllm-paged-kv-cache-v1",
++            prompt_token_count=prompt_token_count,
++            output_token_count=output_token_count,
++            service_start_time=service_start_time,
++            first_token_time=first_token_time,
++            service_end_time=service_end_time,
++            active_live_blocks=active_live_blocks,
++            protected_resident_blocks=None,
++            blocking_claim_ids=[],
++            usable_blocks=None,
++            free_blocks=None,
++            resident_plus_active_blocks=None,
++            capacity_shortfall_blocks=None,
++            field_quality={
++                "join_keys": "runtime_observed",
++                "runtime_commit": (
++                    "runtime_observed" if runtime_commit_observed else "missing"
++                ),
++                "model_identity": "runtime_observed",
++                "tokenizer_identity": (
++                    "runtime_observed" if tokenizer_id != "unknown" else "missing"
++                ),
++                "block_size": "runtime_observed",
++                "kv_format": "runtime_observed",
++                "prompt_token_count": "runtime_observed",
++                "service_timing": service_timing_quality,
++                "active_live_blocks": "derived_from_runtime_token_counts",
++                "capacity_snapshots": "missing_without_allocator_conflict_event",
++                "resident_claims": "missing_without_arbiter_event",
++            },
++        )
++
+     def warmup(self) -> None:
+         self.renderer.warmup(
+             ChatParams(
+@@ -259,6 +373,17 @@ class OpenAIServingChat(OpenAIServing):
+             sub_request_id = (
+                 request_id if len(engine_inputs) == 1 else f"{request_id}_{i}"
+             )
++            self._emit_runtime_request_metadata(
++                "request_submitted",
++                runtime_request_id=sub_request_id,
++                model_name=model_name,
++                tokenizer=tokenizer,
++                prompt_token_count=(
++                    len(prompt_token_ids) if prompt_token_ids is not None else None
++                ),
++                output_token_count=0,
++                metrics=None,
++            )
+ 
+             max_tokens = get_max_tokens(
+                 max_model_len,
+@@ -516,6 +641,7 @@ class OpenAIServingChat(OpenAIServing):
+         finish_reason_sent = [False] * num_choices
+         num_prompt_tokens = 0
+         num_cached_tokens = None
++        last_res: RequestOutput | None = None
+         if self.use_harmony:
+             harmony_parsers = [
+                 get_streamable_parser_for_assistant() for _ in range(num_choices)
+@@ -583,6 +709,7 @@ class OpenAIServingChat(OpenAIServing):
+ 
+         try:
+             async for res in result_generator:
++                last_res = res
+                 if res.prompt_token_ids is not None:
+                     num_prompt_tokens = len(res.prompt_token_ids)
+                     if res.encoder_prompt_token_ids is not None:
+@@ -1236,6 +1363,15 @@ class OpenAIServingChat(OpenAIServing):
+                 completion_tokens=num_completion_tokens,
+                 total_tokens=num_prompt_tokens + num_completion_tokens,
+             )
++            self._emit_runtime_request_metadata(
++                "request_finished",
++                runtime_request_id=request_id,
++                model_name=model_name,
++                tokenizer=tokenizer,
++                prompt_token_count=num_prompt_tokens,
++                output_token_count=num_completion_tokens,
++                metrics=last_res.metrics if last_res is not None else None,
++            )
+ 
+             # Log complete streaming response if output logging is enabled
+             if self.enable_log_outputs and self.request_logger:
+@@ -1604,6 +1740,15 @@ class OpenAIServingChat(OpenAIServing):
+             )
+ 
+         request_metadata.final_usage_info = usage
++        self._emit_runtime_request_metadata(
++            "request_finished",
++            runtime_request_id=request_id,
++            model_name=model_name,
++            tokenizer=tokenizer,
++            prompt_token_count=num_prompt_tokens,
++            output_token_count=num_generated_tokens,
++            metrics=final_res.metrics,
++        )
+ 
+         response = ChatCompletionResponse(
+             id=request_id,
+diff --git a/vllm/v1/core/kv_residency_telemetry.py b/vllm/v1/core/kv_residency_telemetry.py
+index 6491179..57a4067 100644
+--- a/vllm/v1/core/kv_residency_telemetry.py
++++ b/vllm/v1/core/kv_residency_telemetry.py
+@@ -4,12 +4,16 @@
+ 
+ import json
+ import os
++import re
+ import time
+ from typing import Any
+ 
+ from vllm.v1.core.kv_cache_utils import BlockHashWithGroupId
+ 
++_INTERNAL_REQUEST_SUFFIX_RE = re.compile(r"^(?P<base>.+)-[0-9a-f]{8}$")
+ _TELEMETRY_PATH_ENV = "VLLM_KV_RESIDENCY_TELEMETRY_PATH"
++_RUNTIME_METADATA_PATH_ENV = "VLLM_KV_RESIDENCY_RUNTIME_METADATA_PATH"
++_RUNTIME_COMMIT_ENV = "VLLM_KV_RESIDENCY_RUNTIME_COMMIT"
+ _NO_ADMIT_REQUEST_IDS_ENV = "VLLM_KV_RESIDENCY_NO_ADMIT_REQUEST_IDS"
+ _RESIDENT_CLAIM_REQUEST_IDS_ENV = "VLLM_KV_RESIDENCY_CLAIM_REQUEST_IDS"
+ _ENFORCE_PROTECTION_ENV = "VLLM_KV_RESIDENCY_ENFORCE_PROTECTION"
+@@ -25,10 +29,30 @@ def kv_residency_telemetry_enabled() -> bool:
+     return bool(os.environ.get(_TELEMETRY_PATH_ENV))
+ 
+ 
++def runtime_metadata_enabled() -> bool:
++    return bool(os.environ.get(_RUNTIME_METADATA_PATH_ENV))
++
++
+ def hard_exclude_protected_residents_enabled() -> bool:
+     return os.environ.get(_ENFORCE_PROTECTION_ENV) == "hard_exclude"
+ 
+ 
++def _runtime_commit() -> str:
++    return os.environ.get(_RUNTIME_COMMIT_ENV) or "unknown"
++
++
++def _proxy_request_id_for(runtime_request_id: str) -> str:
++    proxy_request_id = runtime_request_id
++    for prefix in ("chatcmpl-", "cmpl-", "resp-"):
++        if runtime_request_id.startswith(prefix):
++            proxy_request_id = runtime_request_id[len(prefix) :]
++            break
++    match = _INTERNAL_REQUEST_SUFFIX_RE.match(proxy_request_id)
++    if match:
++        return match.group("base")
++    return proxy_request_id
++
++
+ def _request_id_matches(request_id: str, expected_id: str) -> bool:
+     return request_id == expected_id or request_id.startswith(f"{expected_id}-")
+ 
+@@ -90,12 +114,20 @@ def emit_kv_residency_event(
+     if not telemetry_path:
+         return
+ 
++    event_time = time.time()
++    proxy_request_id = fields.pop("proxy_request_id", _proxy_request_id_for(request_id))
+     record = {
+         "schema_version": 1,
+         "timestamp_ns": time.time_ns(),
++        "event_time": event_time,
+         "run_id": os.environ.get("VLLM_KV_RESIDENCY_RUN_ID", "unset"),
+         "event": event,
++        "event_type": event,
++        "proxy_request_id": proxy_request_id,
+         "request_id": request_id,
++        "runtime_request_id": request_id,
++        "runtime_name": "vllm",
++        "runtime_commit": _runtime_commit(),
+         "claim_id": fields.pop("claim_id", None),
+         "prefix_id": fields.pop("prefix_id", None),
+         "policy": os.environ.get("VLLM_KV_RESIDENCY_POLICY", "native"),
+@@ -108,11 +140,44 @@ def emit_kv_residency_event(
+         f.write("\n")
+ 
+ 
++def emit_runtime_metadata_event(
++    event_type: str,
++    *,
++    proxy_request_id: str,
++    runtime_request_id: str,
++    **fields: Any,
++) -> None:
++    """Append one runtime metadata JSONL event when enabled."""
++
++    metadata_path = os.environ.get(_RUNTIME_METADATA_PATH_ENV)
++    if not metadata_path:
++        return
++
++    event_time = time.time()
++    record = {
++        "schema_version": "resident-kv-runtime-metadata/v0",
++        "event_type": event_type,
++        "event_time": event_time,
++        "timestamp_ns": time.time_ns(),
++        "proxy_request_id": proxy_request_id,
++        "runtime_request_id": runtime_request_id,
++        "runtime_name": "vllm",
++        "runtime_commit": _runtime_commit(),
++    }
++    record.update(fields)
++
++    with open(metadata_path, "a", encoding="utf-8") as f:
++        f.write(json.dumps(record, sort_keys=True, separators=(",", ":")))
++        f.write("\n")
++
++
+ __all__ = [
+     "_block_hash_to_str",
+     "deny_future_reuse_for_request",
+     "emit_kv_residency_event",
++    "emit_runtime_metadata_event",
+     "hard_exclude_protected_residents_enabled",
+     "kv_residency_telemetry_enabled",
+     "resident_claim_fields_for_request",
++    "runtime_metadata_enabled",
+ ]
