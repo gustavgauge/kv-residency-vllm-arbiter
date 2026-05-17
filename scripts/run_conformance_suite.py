@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate ResidentClaim conformance artifacts for Paper 1."""
+"""Generate ResidentClaim conformance artifacts."""
 
 from __future__ import annotations
 
@@ -199,11 +199,12 @@ def main() -> int:
 
     payload = {
         "generated_at": datetime.now(UTC).isoformat(),
-        "definition_of_done": (
-            "Paper 1 conformance suite with executable direct vLLM traces for "
-            "claim acceptance, materialization, active infeasibility attribution, "
-            "demotion/expiry-before-loss, no-admit separation, and "
-            "materialization-predicate failure."
+        "conformance_scope": (
+            "ResidentClaim conformance suite with executable direct vLLM traces "
+            "for claim acceptance, materialization, active infeasibility "
+            "attribution, demotion/expiry-before-loss, no-admit separation, "
+            "and materialization-predicate failure, plus one backend capability "
+            "classification check."
         ),
         "status_counts": status_counts(results),
         "results": [result.to_record() for result in results],

@@ -65,7 +65,7 @@ def classify_policy(policy: str, case: CapacityCase) -> PolicyOutcome:
             active_served=True,
             active_reusable=True,
             arbiter_action="serve_active_evict_resident",
-            explanation="active allocation silently consumes resident victims",
+            explanation="active allocation consumes resident victims without claim-level reporting",
         )
 
     if policy == "write_no_admit":

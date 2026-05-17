@@ -92,5 +92,5 @@ Do claim only if supported:
 
 - the active/resident conflict is observable in a real runtime;
 - no-admit alone does not protect residents;
-- hard resident protection changes the failure mode from silent resident harm to explicit active-side action;
+- hard resident protection changes the failure mode from unreported resident harm to explicit active-side action;
 - the contract exposes behavior current primitive lists can obscure.

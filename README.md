@@ -12,9 +12,10 @@ The central question is simple:
 protected resident KV + active live KV <= usable KV memory
 ```
 
-When that inequality fails, a runtime should not silently turn accepted resident
-claims into ordinary cache victims. It should preserve, demote, expire, offload,
-defer, refuse, or otherwise report an explicit claim-level outcome.
+When that inequality fails, a runtime should not turn accepted resident claims
+into ordinary cache victims without reporting the outcome. It should
+preserve, demote, expire, offload, defer, refuse, or otherwise report an
+explicit claim-level outcome.
 
 ## What This Artifact Demonstrates
 
@@ -102,7 +103,8 @@ not rely on a speedup claim.
 
 ## Key Evidence
 
-- `artifacts/conformance/results.json`: 8/8 ResidentClaim litmus results.
+- `artifacts/conformance/results.json`: seven trace/materialization checks plus
+  one capability-classification check.
 - `artifacts/conformance/L3_hard_claim_infeasibility.jsonl`: accepted claim,
   materialized predicate, active infeasibility, and attributed refusal.
 - `artifacts/capacity_sweep/capacity_sweep_results.json`: transition around

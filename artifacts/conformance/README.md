@@ -1,6 +1,6 @@
 # ResidentClaim Conformance Artifact
 
-Generated on May 17, 2026 for Paper 1:
+Generated on May 17, 2026 for:
 
 > Resident KV Claims: A Conformance Contract for Future Reuse under Active KV Pressure
 
@@ -18,9 +18,10 @@ vLLM branch and environment variables.
 
 ## Result
 
-`results.json` reports `8 / 8` passing litmus tests:
+`results.json` reports seven executable trace/materialization checks plus one
+capability-classification check:
 
-| Litmus | Status |
+| Check | Status |
 |---|---|
 | L1 no accepted claim, no claim harm | pass |
 | L2 write no-admit separation | pass |
@@ -29,7 +30,7 @@ vLLM branch and environment variables.
 | L5 expiry before loss | pass |
 | L6 materialization predicate failure | pass |
 | L7 trace reconstruction | pass |
-| L8 soft priority is not hard-claim lowering | pass |
+| C1 soft priority is not hard-claim lowering | pass |
 
 The canonical L3 trace contains the direct active/refusal attribution:
 
@@ -50,8 +51,8 @@ The canonical L3 trace contains the direct active/refusal attribution:
 
 | File | Role | SHA-256 |
 |---|---|---|
-| `results.json` | Machine-readable conformance results | `94f8623bde219a61aa5581bc10b15dbcb87244c404bd4e867c6855d6482e73cf` |
-| `summary.md` | Human-readable conformance table | `87f85af8aef4af15e827c51d8350faee10360976b3cf2272fd83f4bf388b3cb0` |
+| `results.json` | Machine-readable conformance results | `f467723d8b5549c93f5dca2abe3ea3f34c3ee46303dc14fc996de03d9d502f2b` |
+| `summary.md` | Human-readable conformance table | `c81ed42161a899fde99ec8e999f040f5411554c5ebe34e2cf59775f31194a567` |
 | `L3_hard_claim_infeasibility.jsonl` | Canonical claim acceptance/materialization/refusal trace | `a0ce8df42f2dc660ceecbc555138847a028ee541f2a383f8811006500329714b` |
 | `L3_hard_claim_infeasibility_summary.json` | Canonical trace summary | `51215b027f99842c7e224e07817bb12ecd5bd28ef58866d909a15c82dbdbbcb7` |
 | `../live_scheduler_pressure/summary.json` | End-to-end `vllm.LLM.generate` pressure trace | `6eade50b7735cee3cc74ba9fd892f67672d823a236570a743390f1d2cf5e8d3b` |

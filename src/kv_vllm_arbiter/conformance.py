@@ -1,4 +1,4 @@
-"""Resident KV claim conformance results for Paper 1 artifacts."""
+"""Resident KV claim conformance results."""
 
 from __future__ import annotations
 
@@ -222,16 +222,16 @@ def materialization_predicate_litmus(evidence: tuple[str, ...]) -> ConformanceRe
 
 def backend_approximation_litmus(evidence: tuple[str, ...]) -> ConformanceResult:
     return ConformanceResult(
-        litmus_id="L8",
-        title="Soft priority is not a sound hard-claim lowering",
+        litmus_id="C1",
+        title="Capability check: soft priority is not a sound hard-claim lowering",
         status=ConformanceStatus.PASS,
         required_observation=(
             "A backend primitive that only changes eviction preference must be "
             "marked approximate or unsound for hard_protected claims."
         ),
         observed=(
-            "The conformance matrix separates priority/duration primitives from "
-            "accepted hard-claim infeasibility and claim-harm telemetry."
+            "The capability classifier separates priority/duration primitives "
+            "from accepted hard-claim infeasibility and claim-harm telemetry."
         ),
         evidence=evidence,
         fields={

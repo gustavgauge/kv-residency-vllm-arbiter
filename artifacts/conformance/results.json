@@ -1,5 +1,5 @@
 {
-  "definition_of_done": "Paper 1 conformance suite with executable direct vLLM traces for claim acceptance, materialization, active infeasibility attribution, demotion/expiry-before-loss, no-admit separation, and materialization-predicate failure.",
+  "conformance_scope": "ResidentClaim conformance suite with executable direct vLLM traces for claim acceptance, materialization, active infeasibility attribution, demotion/expiry-before-loss, no-admit separation, and materialization-predicate failure, plus one backend capability classification check.",
   "generated_at": "2026-05-17T18:41:45.094668+00:00",
   "results": [
     {
@@ -364,11 +364,11 @@
         "hard_protected_lowered_to_soft_priority": "unsound",
         "soft_priority_conformance_class": "approximate"
       },
-      "litmus_id": "L8",
-      "observed": "The conformance matrix separates priority/duration primitives from accepted hard-claim infeasibility and claim-harm telemetry.",
+      "litmus_id": "C1",
+      "observed": "The capability classifier separates priority/duration primitives from accepted hard-claim infeasibility and claim-harm telemetry.",
       "required_observation": "A backend primitive that only changes eviction preference must be marked approximate or unsound for hard_protected claims.",
       "status": "pass",
-      "title": "Soft priority is not a sound hard-claim lowering"
+      "title": "Capability check: soft priority is not a sound hard-claim lowering"
     }
   ],
   "status_counts": {
