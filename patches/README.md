@@ -10,6 +10,10 @@ Patch contents:
   the local `resident-kv-claims-vllm-prototype` checkout at `1954509`. It adds
   request-joinable runtime metadata JSONL and proxy/runtime id fields on
   arbiter telemetry.
+- `vllm_pressure_capacity_telemetry.patch`: incremental telemetry correction
+  against the local checkout after `vllm_runtime_metadata_joinability.patch`.
+  It prevents missing capacity from being encoded as `usable_blocks=0` and emits
+  actual allocatable capacity on scheduler pressure/admission rows.
 - `vllm_prototype_notes.md`: behavior boundary and evidence commands.
 
 The patch is prototype-grade. It is meant to make the paper's conformance

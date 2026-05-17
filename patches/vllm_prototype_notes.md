@@ -84,3 +84,12 @@ For OpenAI serving, caller-provided `request_id` becomes the proxy/runtime join
 key. Lower scheduler events may append an internal 8-hex suffix to the runtime
 request id; the telemetry helper strips that suffix when writing
 `proxy_request_id` so allocator events remain joinable to proxy traces.
+
+## Capacity Telemetry Correction
+
+`vllm_pressure_capacity_telemetry.patch` is a narrow follow-on telemetry patch.
+It stops the JSONL writer from inventing `usable_blocks=0` when no capacity
+snapshot is available, adds actual allocatable `usable_blocks` to
+`BlockPool.kv_residency_conflict_fields`, and includes the same pressure
+snapshot on `active_request_admitted` rows. This is telemetry only; it does not
+change the admission/refusal policy.

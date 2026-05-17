@@ -1,0 +1,62 @@
+diff --git a/vllm/v1/core/block_pool.py b/vllm/v1/core/block_pool.py
+index 1480c4b..4ff9b7c 100644
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -256,6 +256,7 @@ class BlockPool:
+             ),
+             "protected_resident_blocks": protected_resident_blocks,
+             "protected_resident_claims": protected_claims,
++            "usable_blocks": usable_blocks,
+             "resident_plus_active_blocks": (
+                 protected_resident_blocks + active_live_blocks_required
+             ),
+diff --git a/vllm/v1/core/kv_cache_manager.py b/vllm/v1/core/kv_cache_manager.py
+index ec00343..085ce47 100644
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -431,6 +431,10 @@ class KVCacheManager:
+             )
+             return None
+ 
++        conflict_fields = self.block_pool.kv_residency_conflict_fields(
++            num_blocks_to_allocate,
++            free_blocks_before_allocate,
++        )
+         emit_kv_residency_event(
+             "active_request_admitted",
+             request_id=request.request_id,
+@@ -439,7 +443,7 @@ class KVCacheManager:
+             future_reuse_requested=self.enable_caching,
+             future_reuse_admitted=bool(self.enable_caching and not delay_cache_blocks),
+             arbiter_action="native_allocate_slots",
+-            free_blocks_before_allocate=free_blocks_before_allocate,
++            **conflict_fields,
+         )
+ 
+         if (
+diff --git a/vllm/v1/core/kv_residency_telemetry.py b/vllm/v1/core/kv_residency_telemetry.py
+index 57a4067..61a0b34 100644
+--- a/vllm/v1/core/kv_residency_telemetry.py
++++ b/vllm/v1/core/kv_residency_telemetry.py
+@@ -116,6 +116,10 @@ def emit_kv_residency_event(
+ 
+     event_time = time.time()
+     proxy_request_id = fields.pop("proxy_request_id", _proxy_request_id_for(request_id))
++    usable_blocks = fields.pop("usable_blocks", None)
++    if usable_blocks is None and os.environ.get("VLLM_KV_RESIDENCY_USABLE_BLOCKS"):
++        usable_blocks = int(os.environ["VLLM_KV_RESIDENCY_USABLE_BLOCKS"])
++
+     record = {
+         "schema_version": 1,
+         "timestamp_ns": time.time_ns(),
+@@ -131,8 +135,9 @@ def emit_kv_residency_event(
+         "claim_id": fields.pop("claim_id", None),
+         "prefix_id": fields.pop("prefix_id", None),
+         "policy": os.environ.get("VLLM_KV_RESIDENCY_POLICY", "native"),
+-        "usable_blocks": int(os.environ.get("VLLM_KV_RESIDENCY_USABLE_BLOCKS", "0")),
+     }
++    if usable_blocks is not None:
++        record["usable_blocks"] = usable_blocks
+     record.update(fields)
+ 
+     with open(telemetry_path, "a", encoding="utf-8") as f:
