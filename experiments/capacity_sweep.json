@@ -1,0 +1,17 @@
+{
+  "scenario": {
+    "name": "resident60_active70",
+    "resident_blocks": 60,
+    "active_live_blocks": 70,
+    "block_size_tokens": 16
+  },
+  "usable_blocks": [80, 90, 100, 110, 120, 130, 150],
+  "policies": [
+    "native",
+    "write_no_admit",
+    "hard_resident_exclude",
+    "resident_reserve",
+    "active_deferral",
+    "active_refusal"
+  ]
+}

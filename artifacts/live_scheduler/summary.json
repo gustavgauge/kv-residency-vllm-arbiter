@@ -1,0 +1,84 @@
+{
+  "jsonl": "artifacts/live_scheduler/telemetry.jsonl",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "observed_cached_tokens_after_first_request": [
+    464,
+    464
+  ],
+  "requests": [
+    {
+      "index": 0,
+      "metrics": {
+        "arrival_time": 1778961979.4014683,
+        "first_token_latency": 0.5649375915527344,
+        "first_token_ts": 198627.268565744,
+        "last_token_ts": 198627.496557545,
+        "num_generation_tokens": 16,
+        "queued_ts": 198626.713748045,
+        "scheduled_ts": 198626.713767265
+      },
+      "num_cached_tokens": 0,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 480,
+      "request_id": "0",
+      "ttft_s": 0.5649375915527344,
+      "wall_latency_s": 0.7931170340161771
+    },
+    {
+      "index": 1,
+      "metrics": {
+        "arrival_time": 1778961980.194529,
+        "first_token_latency": 0.04372453689575195,
+        "first_token_ts": 198627.540435958,
+        "last_token_ts": 198627.769170094,
+        "num_generation_tokens": 16,
+        "queued_ts": 198627.50191288,
+        "scheduled_ts": 198627.50192031
+      },
+      "num_cached_tokens": 464,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 480,
+      "request_id": "1",
+      "ttft_s": 0.04372453689575195,
+      "wall_latency_s": 0.27260152899543755
+    },
+    {
+      "index": 2,
+      "metrics": {
+        "arrival_time": 1778961980.4671302,
+        "first_token_latency": 0.03684425354003906,
+        "first_token_ts": 198627.806157323,
+        "last_token_ts": 198628.034457945,
+        "num_generation_tokens": 16,
+        "queued_ts": 198627.773966019,
+        "scheduled_ts": 198627.773973429
+      },
+      "num_cached_tokens": 464,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 480,
+      "request_id": "2",
+      "ttft_s": 0.03684425354003906,
+      "wall_latency_s": 0.2652512209897395
+    }
+  ],
+  "run_id": "live-scheduler-smollm-prefix-cache",
+  "scheduler_path": "vllm.LLM.generate",
+  "server_flags": {
+    "disable_log_stats": false,
+    "dtype": "half",
+    "enable_prefix_caching": true,
+    "enforce_eager": true,
+    "gpu_memory_utilization": 0.35,
+    "kv_cache_memory_bytes": null,
+    "max_model_len": 512,
+    "max_tokens": 16
+  },
+  "status": "ok",
+  "telemetry_event_counts": {
+    "active_request_admitted": 48,
+    "allocation_victim_selected": 35,
+    "future_reuse_admitted": 48,
+    "resident_block_materialized": 32
+  },
+  "telemetry_events": 163
+}

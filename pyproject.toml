@@ -1,0 +1,10 @@
+[project]
+name = "kv-residency-vllm-arbiter"
+version = "0.1.0"
+description = "vLLM prototype workspace for active/resident KV arbitration."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

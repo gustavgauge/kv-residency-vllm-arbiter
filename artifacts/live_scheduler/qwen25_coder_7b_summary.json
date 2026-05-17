@@ -1,0 +1,84 @@
+{
+  "jsonl": "artifacts/live_scheduler/qwen25_coder_7b_telemetry.jsonl",
+  "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "observed_cached_tokens_after_first_request": [
+    464,
+    464
+  ],
+  "requests": [
+    {
+      "index": 0,
+      "metrics": {
+        "arrival_time": 1778962195.25376,
+        "first_token_latency": 0.3449578285217285,
+        "first_token_ts": 198842.900860033,
+        "last_token_ts": 198843.460675304,
+        "num_generation_tokens": 16,
+        "queued_ts": 198842.630100475,
+        "scheduled_ts": 198842.630197595
+      },
+      "num_cached_tokens": 0,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 479,
+      "request_id": "0",
+      "ttft_s": 0.3449578285217285,
+      "wall_latency_s": 0.9053158960014116
+    },
+    {
+      "index": 1,
+      "metrics": {
+        "arrival_time": 1778962196.1588423,
+        "first_token_latency": 0.04222512245178223,
+        "first_token_ts": 198843.503237804,
+        "last_token_ts": 198843.791263992,
+        "num_generation_tokens": 16,
+        "queued_ts": 198843.462938883,
+        "scheduled_ts": 198843.462948813
+      },
+      "num_cached_tokens": 464,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 479,
+      "request_id": "1",
+      "ttft_s": 0.04222512245178223,
+      "wall_latency_s": 0.3304489290167112
+    },
+    {
+      "index": 2,
+      "metrics": {
+        "arrival_time": 1778962196.489288,
+        "first_token_latency": 0.03536343574523926,
+        "first_token_ts": 198843.826830469,
+        "last_token_ts": 198844.116647243,
+        "num_generation_tokens": 16,
+        "queued_ts": 198843.793205513,
+        "scheduled_ts": 198843.793213333
+      },
+      "num_cached_tokens": 464,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 479,
+      "request_id": "2",
+      "ttft_s": 0.03536343574523926,
+      "wall_latency_s": 0.32537084200885147
+    }
+  ],
+  "run_id": "live-scheduler-qwen25-coder-7b-prefix-cache",
+  "scheduler_path": "vllm.LLM.generate",
+  "server_flags": {
+    "disable_log_stats": false,
+    "dtype": "half",
+    "enable_prefix_caching": true,
+    "enforce_eager": true,
+    "gpu_memory_utilization": 0.35,
+    "kv_cache_memory_bytes": 1073741824,
+    "max_model_len": 512,
+    "max_tokens": 16
+  },
+  "status": "ok",
+  "telemetry_event_counts": {
+    "active_request_admitted": 48,
+    "allocation_victim_selected": 35,
+    "future_reuse_admitted": 48,
+    "resident_block_materialized": 32
+  },
+  "telemetry_events": 163
+}

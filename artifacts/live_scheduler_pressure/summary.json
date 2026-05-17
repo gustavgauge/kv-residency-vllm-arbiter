@@ -1,0 +1,178 @@
+{
+  "active_error": null,
+  "active_event_counts": {
+    "active_request_deferred": 1,
+    "active_request_refused": 1
+  },
+  "active_status": "refused",
+  "blocking_claim_ids": [
+    "claim:live-resident"
+  ],
+  "claim_lifecycle_event_counts": {
+    "resident_claim_accepted": 1,
+    "resident_claim_materialized": 1
+  },
+  "first_active_deferred_event": {
+    "active_live_blocks_current": 0,
+    "active_live_blocks_required": 46,
+    "arbiter_action": "scheduler_full_sequence_gate",
+    "blocking_claim_ids": [
+      "claim:live-resident"
+    ],
+    "blocking_prefix_ids": [
+      "live-resident"
+    ],
+    "capacity_shortfall_blocks": 19,
+    "claim_id": null,
+    "event": "active_request_deferred",
+    "feasibility": "infeasible_preserve_resident_and_active",
+    "free_blocks_before_allocate": 27,
+    "future_reuse_admitted": false,
+    "future_reuse_requested": true,
+    "policy": "live_scheduler_hard_exclude_pressure",
+    "prefix_id": null,
+    "protected_resident_blocks": 40,
+    "protected_resident_claims": [
+      {
+        "claim_id": "claim:live-resident",
+        "predicate": "leading_prefix_at_least",
+        "predicate_materialized": true,
+        "prefix_id": "live-resident",
+        "protection_mode": "hard_exclude",
+        "resident_blocks_materialized": 40,
+        "resident_blocks_required": 40,
+        "useful_threshold_blocks": 40
+      }
+    ],
+    "request_id": "1-98f251b5",
+    "resident_plus_active_blocks": 86,
+    "run_id": "live-scheduler-pressure-hard-exclude",
+    "schema_version": 1,
+    "timestamp_ns": 1779037929875920523,
+    "usable_blocks": 68
+  },
+  "first_active_refused_event": {
+    "active_live_blocks_current": 0,
+    "active_live_blocks_required": 46,
+    "arbiter_action": "protected_resident_capacity_refused",
+    "blocking_claim_ids": [
+      "claim:live-resident"
+    ],
+    "blocking_prefix_ids": [
+      "live-resident"
+    ],
+    "capacity_shortfall_blocks": 19,
+    "claim_id": null,
+    "defer_attempts": 1,
+    "event": "active_request_refused",
+    "feasibility": "infeasible_preserve_resident_and_active",
+    "free_blocks_before_allocate": 27,
+    "future_reuse_admitted": false,
+    "future_reuse_requested": true,
+    "policy": "live_scheduler_hard_exclude_pressure",
+    "prefix_id": null,
+    "protected_resident_blocks": 40,
+    "protected_resident_claims": [
+      {
+        "claim_id": "claim:live-resident",
+        "predicate": "leading_prefix_at_least",
+        "predicate_materialized": true,
+        "prefix_id": "live-resident",
+        "protection_mode": "hard_exclude",
+        "resident_blocks_materialized": 40,
+        "resident_blocks_required": 40,
+        "useful_threshold_blocks": 40
+      }
+    ],
+    "request_id": "1-98f251b5",
+    "resident_plus_active_blocks": 86,
+    "run_id": "live-scheduler-pressure-hard-exclude",
+    "schema_version": 1,
+    "timestamp_ns": 1779037929875995394,
+    "usable_blocks": 68
+  },
+  "jsonl": "artifacts/live_scheduler_pressure/telemetry.jsonl",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "protected_resident_materialized_events": 40,
+  "requests": [
+    {
+      "finish_reasons": [
+        "length"
+      ],
+      "finished": true,
+      "index": 0,
+      "metrics": {
+        "arrival_time": 1779037929.4429607,
+        "first_token_latency": 0.21728229522705078,
+        "first_token_ts": 14878.355831743,
+        "last_token_ts": 14878.569771711,
+        "num_generation_tokens": 16,
+        "queued_ts": 14878.148209843,
+        "scheduled_ts": 14878.148229879
+      },
+      "num_cached_tokens": 0,
+      "num_output_tokens": 16,
+      "num_prompt_tokens": 636,
+      "request_id": "0",
+      "status": "served",
+      "stop_reasons": [
+        null
+      ],
+      "ttft_s": 0.21728229522705078,
+      "wall_latency_s": 0.43140201499954856
+    },
+    {
+      "finish_reasons": [
+        "error"
+      ],
+      "finished": true,
+      "index": 1,
+      "metrics": {
+        "arrival_time": 1779037929.87433,
+        "first_token_latency": 0.0018000602722167969,
+        "first_token_ts": 14878.571742588,
+        "last_token_ts": 14878.571742588,
+        "num_generation_tokens": 0,
+        "queued_ts": 14878.571492342,
+        "scheduled_ts": 0.0
+      },
+      "num_cached_tokens": 0,
+      "num_output_tokens": 0,
+      "num_prompt_tokens": 726,
+      "request_id": "1",
+      "status": "refused",
+      "stop_reasons": [
+        "protected_resident_capacity_refused"
+      ],
+      "ttft_s": 0.0018000602722167969,
+      "wall_latency_s": 0.0019099940000160132
+    }
+  ],
+  "run_id": "live-scheduler-pressure-hard-exclude",
+  "scheduler_path": "vllm.LLM.generate",
+  "server_flags": {
+    "active_max_tokens": 16,
+    "active_timeout_s": 5,
+    "disable_log_stats": false,
+    "dtype": "half",
+    "enable_prefix_caching": true,
+    "enforce_eager": true,
+    "kv_cache_memory_bytes": 25165824,
+    "max_model_len": 768,
+    "resident_max_tokens": 16,
+    "usable_blocks": 68,
+    "useful_threshold_blocks": 40
+  },
+  "status": "active_not_served",
+  "telemetry_event_counts": {
+    "active_request_admitted": 16,
+    "active_request_deferred": 1,
+    "active_request_refused": 1,
+    "allocation_victim_selected": 41,
+    "future_reuse_admitted": 16,
+    "resident_block_materialized": 40,
+    "resident_claim_accepted": 1,
+    "resident_claim_materialized": 1
+  },
+  "telemetry_events": 117
+}

@@ -1,0 +1,16 @@
+{
+  "active_action": "active_refused",
+  "active_future_reuse_admitted": false,
+  "active_served": false,
+  "blocking_claim_ids": [
+    "claim:resident"
+  ],
+  "cached_resident_victims": 0,
+  "capacity_shortfall_blocks": 50,
+  "feasibility": "infeasible_preserve_resident_and_active",
+  "policy": "hard_resident_exclude",
+  "protected_resident_blocks": 60,
+  "resident_preserved": true,
+  "run_id": "hard-claim-60-70-80",
+  "usable_blocks": 80
+}
