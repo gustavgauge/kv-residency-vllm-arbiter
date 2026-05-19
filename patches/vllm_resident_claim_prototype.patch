@@ -40,27 +40,51 @@ index 4b62d2a..1480c4b 100644
 +        except (TypeError, ValueError):
 +            return default
 +
++    @staticmethod
++    def _kv_residency_leading_blocks_survived(
++        logical_positions: Iterable[int],
++    ) -> int:
++        surviving = {int(position) for position in logical_positions}
++        leading_blocks = 0
++        while leading_blocks in surviving:
++            leading_blocks += 1
++        return leading_blocks
++
++    def _kv_residency_claim_predicate_fields(
++        self,
++        claim: dict[str, Any],
++    ) -> dict[str, Any]:
++        logical_positions_by_block = claim.get("logical_block_positions", {})
++        logical_positions = tuple(logical_positions_by_block.values())
++        threshold = self._kv_residency_int_field(
++            claim.get("useful_threshold_blocks")
++        )
++        leading_blocks = self._kv_residency_leading_blocks_survived(
++            logical_positions
++        )
++        return {
++            "resident_blocks_materialized": len(logical_positions),
++            "resident_blocks_required": threshold,
++            "useful_threshold_blocks": threshold,
++            "leading_blocks_survived": leading_blocks,
++            "predicate": "leading_prefix_at_least",
++            "predicate_materialized": (
++                True if threshold == 0 else leading_blocks >= threshold
++            ),
++        }
++
 +    def _kv_residency_protected_claim_records(self) -> list[dict[str, Any]]:
 +        records: list[dict[str, Any]] = []
 +        for claim in self.kv_residency_claims.values():
 +            if claim.get("status") != "protected":
 +                continue
-+            block_ids = set(claim.get("block_ids", set()))
-+            threshold = self._kv_residency_int_field(
-+                claim.get("useful_threshold_blocks")
-+            )
++            predicate_fields = self._kv_residency_claim_predicate_fields(claim)
 +            records.append(
 +                {
 +                    "claim_id": claim.get("claim_id"),
 +                    "prefix_id": claim.get("prefix_id"),
 +                    "protection_mode": claim.get("protection_mode"),
-+                    "resident_blocks_materialized": len(block_ids),
-+                    "resident_blocks_required": threshold,
-+                    "useful_threshold_blocks": threshold,
-+                    "predicate": "leading_prefix_at_least",
-+                    "predicate_materialized": (
-+                        True if threshold == 0 else len(block_ids) >= threshold
-+                    ),
++                    **predicate_fields,
 +                }
 +            )
 +        return records
@@ -109,7 +133,10 @@ index 4b62d2a..1480c4b 100644
 +        }
 +
 +    def _kv_residency_register_claim_block(
-+        self, block_id: int, claim_fields: dict[str, Any]
++        self,
++        block_id: int,
++        claim_fields: dict[str, Any],
++        logical_block_position: int,
 +    ) -> None:
 +        claim_id = claim_fields.get("claim_id")
 +        if claim_id is None or not claim_fields.get("is_protected_resident"):
@@ -129,6 +156,7 @@ index 4b62d2a..1480c4b 100644
 +                "predicted_value": claim_fields.get("predicted_value"),
 +                "confidence": claim_fields.get("confidence"),
 +                "block_ids": set(),
++                "logical_block_positions": {},
 +                "status": "protected",
 +                "materialized_emitted": False,
 +                "harm_emitted": False,
@@ -153,13 +181,12 @@ index 4b62d2a..1480c4b 100644
 +                protection_mode=claim_fields.get("protection_mode"),
 +            )
 +        claim["block_ids"].add(block_id)
-+        threshold = self._kv_residency_int_field(
-+            claim.get("useful_threshold_blocks")
-+        )
++        claim["logical_block_positions"][block_id] = int(logical_block_position)
++        predicate_fields = self._kv_residency_claim_predicate_fields(claim)
 +        if (
-+            threshold > 0
++            predicate_fields["resident_blocks_required"] > 0
 +            and not claim.get("materialized_emitted")
-+            and len(claim["block_ids"]) >= threshold
++            and predicate_fields["predicate_materialized"]
 +        ):
 +            claim["materialized_emitted"] = True
 +            emit_kv_residency_event(
@@ -167,12 +194,8 @@ index 4b62d2a..1480c4b 100644
 +                request_id=str(claim.get("prefix_id") or claim_id),
 +                claim_id=claim_id,
 +                prefix_id=claim.get("prefix_id"),
-+                resident_blocks_materialized=len(claim["block_ids"]),
-+                resident_blocks_required=threshold,
-+                useful_threshold_blocks=threshold,
-+                predicate="leading_prefix_at_least",
-+                predicate_materialized=True,
 +                protection_mode=claim.get("protection_mode"),
++                **predicate_fields,
 +            )
 +
 +    def _kv_residency_relax_claim(self, claim_id: str, reason: str) -> None:
@@ -223,14 +246,13 @@ index 4b62d2a..1480c4b 100644
 +        for claim_id in harmed_claim_ids:
 +            claim = self.kv_residency_claims[claim_id]
 +            status_before = claim.get("status")
-+            before_count = len(claim["block_ids"])
++            predicate_before = self._kv_residency_claim_predicate_fields(claim)
 +            claim["block_ids"].discard(block_id)
++            claim["logical_block_positions"].pop(block_id, None)
 +            self.kv_residency_protected_block_ids.discard(block_id)
-+            threshold = self._kv_residency_int_field(
-+                claim.get("useful_threshold_blocks")
-+            )
-+            predicate_was_true = threshold > 0 and before_count >= threshold
-+            predicate_now_false = threshold > 0 and len(claim["block_ids"]) < threshold
++            predicate_after = self._kv_residency_claim_predicate_fields(claim)
++            predicate_was_true = bool(predicate_before["predicate_materialized"])
++            predicate_now_false = not bool(predicate_after["predicate_materialized"])
 +            if (
 +                status_before == "protected"
 +                and not claim.get("harm_emitted")
@@ -245,14 +267,17 @@ index 4b62d2a..1480c4b 100644
 +                    claim_id=claim_id,
 +                    prefix_id=claim.get("prefix_id"),
 +                    physical_block_id=block_id,
-+                    resident_blocks_materialized=len(claim["block_ids"]),
-+                    resident_blocks_required=threshold,
-+                    useful_threshold_blocks=threshold,
-+                    predicate="leading_prefix_at_least",
++                    protection_mode=claim.get("protection_mode"),
 +                    predicate_before=True,
 +                    predicate_after=False,
-+                    protection_mode=claim.get("protection_mode"),
++                    predicate_before_leading_blocks=predicate_before[
++                        "leading_blocks_survived"
++                    ],
++                    predicate_after_leading_blocks=predicate_after[
++                        "leading_blocks_survived"
++                    ],
 +                    value_lost=claim.get("predicted_value"),
++                    **predicate_after,
 +                )
 +                continue
 +
@@ -262,11 +287,9 @@ index 4b62d2a..1480c4b 100644
 +                claim_id=claim_id,
 +                prefix_id=claim.get("prefix_id"),
 +                physical_block_id=block_id,
-+                resident_blocks_materialized=len(claim["block_ids"]),
-+                resident_blocks_required=threshold,
-+                useful_threshold_blocks=threshold,
 +                claim_status=status_before,
 +                protection_mode=claim.get("protection_mode"),
++                **predicate_after,
 +            )
  
      def get_cached_block(
@@ -276,7 +299,11 @@ index 4b62d2a..1480c4b 100644
              blk.block_hash = block_hash_with_group_id
              self.cached_block_hash_to_block.insert(block_hash_with_group_id, blk)
 +            claim_fields = resident_claim_fields_for_request(request.request_id)
-+            self._kv_residency_register_claim_block(blk.block_id, claim_fields)
++            self._kv_residency_register_claim_block(
++                blk.block_id,
++                claim_fields,
++                logical_block_position=num_cached_blocks + i,
++            )
 +            if kv_residency_telemetry_enabled():
 +                emit_kv_residency_event(
 +                    "resident_block_materialized",

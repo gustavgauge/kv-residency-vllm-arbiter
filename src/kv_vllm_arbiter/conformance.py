@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Iterable
 
+from .materialization import evaluate_leading_prefix
+
 
 Event = dict[str, Any]
 
@@ -192,9 +194,8 @@ def evaluate_demotion_or_expiry_before_loss(
 def materialization_predicate_litmus(evidence: tuple[str, ...]) -> ConformanceResult:
     surviving_positions = tuple(range(1, 60))
     required_blocks = 60
-    leading_blocks = 0
-    materialized = leading_blocks >= required_blocks
-    passed = len(surviving_positions) > 0 and not materialized
+    evaluation = evaluate_leading_prefix(surviving_positions, required_blocks)
+    passed = evaluation.surviving_blocks > 0 and not evaluation.materialized
     return ConformanceResult(
         litmus_id="L6",
         title="Block survival can fail useful-prefix materialization",
@@ -204,18 +205,19 @@ def materialization_predicate_litmus(evidence: tuple[str, ...]) -> ConformanceRe
             "prefix predicate that makes the future computation reusable."
         ),
         observed=(
-            f"surviving_blocks={len(surviving_positions)}, "
-            f"leading_blocks={leading_blocks}, required_blocks={required_blocks}, "
-            f"materialized={materialized}"
+            f"surviving_blocks={evaluation.surviving_blocks}, "
+            f"leading_blocks={evaluation.leading_blocks}, "
+            f"required_blocks={evaluation.required_blocks}, "
+            f"materialized={evaluation.materialized}"
         ),
         evidence=evidence,
         fields={
             "predicate": "leading_prefix_at_least",
-            "required_blocks": required_blocks,
+            "required_blocks": evaluation.required_blocks,
             "surviving_positions_sample": list(surviving_positions[:8]),
-            "surviving_blocks": len(surviving_positions),
-            "leading_blocks": leading_blocks,
-            "materialized": materialized,
+            "surviving_blocks": evaluation.surviving_blocks,
+            "leading_blocks": evaluation.leading_blocks,
+            "materialized": evaluation.materialized,
         },
     )
 

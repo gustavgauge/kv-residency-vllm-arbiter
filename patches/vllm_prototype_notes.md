@@ -40,6 +40,8 @@ The prototype demonstrates runtime semantics, not a production policy. It adds:
 - native allocation telemetry for the 60 resident / 70 active / 80 usable case;
 - write no-admit as a separate future-reuse admission control;
 - resident claim metadata with useful leading-prefix thresholds;
+- leading-prefix predicate evaluation over logical block positions, not raw
+  surviving block count;
 - hard resident exclusion from ordinary free-block victims;
 - active refusal/defer attribution to blocking resident claims;
 - demotion and expiry events before later block loss;

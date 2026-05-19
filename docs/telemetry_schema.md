@@ -75,6 +75,12 @@ Claim events should include:
 }
 ```
 
+For `predicate="leading_prefix_at_least"`, `resident_blocks_materialized` is not
+the materialization predicate by itself. The runtime must evaluate
+`leading_blocks_survived >= resident_blocks_required` over logical block
+positions. A trace that preserves many tail blocks while losing logical block
+0 is not materialized, even if the raw surviving-block count is high.
+
 ## Active Request Fields
 
 Active events should include:

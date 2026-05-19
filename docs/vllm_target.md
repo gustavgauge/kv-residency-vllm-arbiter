@@ -14,6 +14,12 @@ The branch is based on upstream commit:
 b1388b1fbf5aaef47937fabe98931211684666a6
 ```
 
+The local prototype head used for the predicate-fidelity update is:
+
+```text
+743e2f9 Fix resident KV leading-prefix predicate fidelity
+```
+
 ## Environment Variables
 
 Configure the runtime location explicitly:
