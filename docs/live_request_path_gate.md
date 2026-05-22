@@ -154,7 +154,11 @@ connector run emitted a store and worker completion, then failed in vLLM's
 `OffloadingConnector` metrics observer with an `AssertionError` while processing
 transfer stats. The successful connector evidence therefore disables stats
 logging and records latency/request counters from the harness summary rather
-than vLLM stat logging.
+than vLLM stat logging. The bounded follow-up inspection found an existing
+vLLM OffloadingConnector stats serialization mismatch: `record_transfer()`
+stores `OffloadingOperationMetrics` objects, while `reduce()` and the
+Prometheus observer assert dict-shaped operations. This is treated as a threat
+to validity for vLLM stats/TTFT, not as a ResidentClaim mechanism failure.
 
 ## 2026-05-22 Pydev Connector Failure Semantics
 
@@ -197,3 +201,26 @@ The controls intentionally fail the outcome gate:
 | `unclaimed_load_failure` | Fails failure outcome and emits no claim-scoped ResidentClaim refusal. |
 | `generic_counter_only` | Fails because generic counters lack claim, predicate, cache, token-map, and outcome identity. |
 | `fallback_recompute` | Fails because request service after a failed load is not counted as satisfying the accepted claim without prior refusal/demotion/expiry/harm. |
+
+The paper-grade repeated run is
+`artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/`.
+It was generated with:
+
+```bash
+python3 scripts/run_pydev_connector_failure_repetitions.py --run-set-id 20260522Tpaper2_connector_failure_repetitions
+```
+
+`scripts/normalize_pydev_connector_failure_semantics.py` and the repetition
+harness write `normalized_summary.json` next to raw scenario summaries and
+aggregate rows in `aggregate.json`, `aggregate.md`, and
+`normalized_summaries.jsonl`. The repeated aggregate records:
+
+| Scenario | Runs | Observation pass | Failure-outcome pass | Event-sequence valid |
+|---|---:|---:|---:|---:|
+| `success_no_event_path` | 30 | 0/30 | 0/30 | 30/30 |
+| `success_path` | 30 | 30/30 | 0/30 | 30/30 |
+| `claimed_load_failure` | 30 | 0/30 | 30/30 | 30/30 |
+| `wrong_claim_failure` | 10 | 10/10 | 0/10 | 10/10 |
+| `unclaimed_load_failure` | 10 | 0/10 | 0/10 | 10/10 |
+| `fallback_recompute` | 10 | 10/10 | 0/10 | 10/10 |
+| `generic_counter_only` | 1 | 0/1 | 0/1 | 1/1 |

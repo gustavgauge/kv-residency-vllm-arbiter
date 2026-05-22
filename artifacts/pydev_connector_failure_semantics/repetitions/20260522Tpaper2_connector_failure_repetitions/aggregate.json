@@ -1,0 +1,594 @@
+{
+  "runs": 121,
+  "scenarios": {
+    "claimed_load_failure": {
+      "analyzer_runtime_ns": {
+        "count": 30,
+        "max": 107310.0,
+        "median": 95505.0,
+        "min": 85199.0,
+        "p95": 106410.0
+      },
+      "event_bytes": {
+        "count": 30,
+        "max": 22782.0,
+        "median": 22782.0,
+        "min": 22780.0,
+        "p95": 22782.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 30,
+        "rate": 1.0,
+        "total": 30
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 30,
+        "rate": 1.0,
+        "total": 30
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 30,
+        "max": 185269.0,
+        "median": 165430.0,
+        "min": 147950.0,
+        "p95": 182290.0
+      },
+      "final_request_outcomes": {
+        "active_request_refused": 30
+      },
+      "observation_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 30
+      },
+      "resident_wall_time_s": {
+        "count": 30,
+        "max": 0.210628,
+        "median": 0.19141999999999998,
+        "min": 0.175542,
+        "p95": 0.203255
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 30,
+        "max": 95590.0,
+        "median": 88445.0,
+        "min": 78450.0,
+        "p95": 93850.0
+      },
+      "reuse_cached_tokens": {
+        "count": 30,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      },
+      "reuse_wall_time_s": {
+        "count": 30,
+        "max": 0.003265,
+        "median": 0.0030435,
+        "min": 0.002829,
+        "p95": 0.003262
+      },
+      "runs": 30,
+      "transfer_bytes_total": {
+        "count": 30,
+        "max": 20643840.0,
+        "median": 20643840.0,
+        "min": 20643840.0,
+        "p95": 20643840.0
+      },
+      "worker_transfer_count": {
+        "count": 30,
+        "max": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p95": 2.0
+      }
+    },
+    "fallback_recompute": {
+      "analyzer_runtime_ns": {
+        "count": 10,
+        "max": 118181.0,
+        "median": 111985.5,
+        "min": 101110.0,
+        "p95": 118181.0
+      },
+      "event_bytes": {
+        "count": 10,
+        "max": 29140.0,
+        "median": 29138.5,
+        "min": 29137.0,
+        "p95": 29140.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 10,
+        "rate": 1.0,
+        "total": 10
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 10
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "fallback_recompute_not_claim_satisfaction": 10
+      },
+      "observation_gate_pass_rate": {
+        "passed": 10,
+        "rate": 1.0,
+        "total": 10
+      },
+      "resident_wall_time_s": {
+        "count": 10,
+        "max": 0.209265,
+        "median": 0.1948395,
+        "min": 0.177864,
+        "p95": 0.209265
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 10,
+        "max": 448.0,
+        "median": 448.0,
+        "min": 448.0,
+        "p95": 448.0
+      },
+      "reuse_wall_time_s": {
+        "count": 10,
+        "max": 0.10929,
+        "median": 0.0990155,
+        "min": 0.091901,
+        "p95": 0.10929
+      },
+      "runs": 10,
+      "transfer_bytes_total": {
+        "count": 10,
+        "max": 30965760.0,
+        "median": 30965760.0,
+        "min": 30965760.0,
+        "p95": 30965760.0
+      },
+      "worker_transfer_count": {
+        "count": 10,
+        "max": 3.0,
+        "median": 3.0,
+        "min": 3.0,
+        "p95": 3.0
+      }
+    },
+    "generic_counter_only": {
+      "analyzer_runtime_ns": {
+        "count": 1,
+        "max": 19580.0,
+        "median": 19580.0,
+        "min": 19580.0,
+        "p95": 19580.0
+      },
+      "event_bytes": {
+        "count": 1,
+        "max": 394.0,
+        "median": 394.0,
+        "min": 394.0,
+        "p95": 394.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 1,
+        "rate": 1.0,
+        "total": 1
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 1
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "no_request_records": 1
+      },
+      "observation_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 1
+      },
+      "resident_wall_time_s": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_wall_time_s": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "runs": 1,
+      "transfer_bytes_total": {
+        "count": 1,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      },
+      "worker_transfer_count": {
+        "count": 1,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      }
+    },
+    "success_no_event_path": {
+      "analyzer_runtime_ns": {
+        "count": 30,
+        "max": 21559.0,
+        "median": 16135.0,
+        "min": 14280.0,
+        "p95": 17460.0
+      },
+      "event_bytes": {
+        "count": 30,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 30,
+        "rate": 1.0,
+        "total": 30
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 30
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "served": 30
+      },
+      "observation_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 30
+      },
+      "resident_wall_time_s": {
+        "count": 30,
+        "max": 0.211099,
+        "median": 0.198664,
+        "min": 0.175427,
+        "p95": 0.211063
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 30,
+        "max": 448.0,
+        "median": 448.0,
+        "min": 448.0,
+        "p95": 448.0
+      },
+      "reuse_wall_time_s": {
+        "count": 30,
+        "max": 0.103685,
+        "median": 0.09781699999999999,
+        "min": 0.08835,
+        "p95": 0.103508
+      },
+      "runs": 30,
+      "transfer_bytes_total": {
+        "count": 30,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      },
+      "worker_transfer_count": {
+        "count": 30,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      }
+    },
+    "success_path": {
+      "analyzer_runtime_ns": {
+        "count": 30,
+        "max": 82950.0,
+        "median": 70705.0,
+        "min": 67350.0,
+        "p95": 79680.0
+      },
+      "event_bytes": {
+        "count": 30,
+        "max": 18196.0,
+        "median": 18196.0,
+        "min": 18194.0,
+        "p95": 18196.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 30,
+        "rate": 1.0,
+        "total": 30
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 30
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "served": 30
+      },
+      "observation_gate_pass_rate": {
+        "passed": 30,
+        "rate": 1.0,
+        "total": 30
+      },
+      "resident_wall_time_s": {
+        "count": 30,
+        "max": 0.205481,
+        "median": 0.18164750000000002,
+        "min": 0.175078,
+        "p95": 0.204786
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 30,
+        "max": 448.0,
+        "median": 448.0,
+        "min": 448.0,
+        "p95": 448.0
+      },
+      "reuse_wall_time_s": {
+        "count": 30,
+        "max": 0.106179,
+        "median": 0.091304,
+        "min": 0.088591,
+        "p95": 0.105039
+      },
+      "runs": 30,
+      "transfer_bytes_total": {
+        "count": 30,
+        "max": 20643840.0,
+        "median": 20643840.0,
+        "min": 20643840.0,
+        "p95": 20643840.0
+      },
+      "worker_transfer_count": {
+        "count": 30,
+        "max": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p95": 2.0
+      }
+    },
+    "unclaimed_load_failure": {
+      "analyzer_runtime_ns": {
+        "count": 10,
+        "max": 41540.0,
+        "median": 38305.0,
+        "min": 35870.0,
+        "p95": 41540.0
+      },
+      "event_bytes": {
+        "count": 10,
+        "max": 5553.0,
+        "median": 5553.0,
+        "min": 5550.0,
+        "p95": 5553.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 10,
+        "rate": 1.0,
+        "total": 10
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 10
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "not_claim_scoped": 10
+      },
+      "observation_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 10
+      },
+      "resident_wall_time_s": {
+        "count": 10,
+        "max": 0.202425,
+        "median": 0.182716,
+        "min": 0.176827,
+        "p95": 0.202425
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 10,
+        "max": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p95": 0.0
+      },
+      "reuse_wall_time_s": {
+        "count": 10,
+        "max": 0.002897,
+        "median": 0.0026665,
+        "min": 0.002611,
+        "p95": 0.002897
+      },
+      "runs": 10,
+      "transfer_bytes_total": {
+        "count": 10,
+        "max": 20643840.0,
+        "median": 20643840.0,
+        "min": 20643840.0,
+        "p95": 20643840.0
+      },
+      "worker_transfer_count": {
+        "count": 10,
+        "max": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p95": 2.0
+      }
+    },
+    "wrong_claim_failure": {
+      "analyzer_runtime_ns": {
+        "count": 10,
+        "max": 81210.0,
+        "median": 70315.0,
+        "min": 68750.0,
+        "p95": 81210.0
+      },
+      "event_bytes": {
+        "count": 10,
+        "max": 18553.0,
+        "median": 18553.0,
+        "min": 18552.0,
+        "p95": 18553.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 10,
+        "rate": 1.0,
+        "total": 10
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 10
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "final_request_outcomes": {
+        "served": 10
+      },
+      "observation_gate_pass_rate": {
+        "passed": 10,
+        "rate": 1.0,
+        "total": 10
+      },
+      "resident_wall_time_s": {
+        "count": 10,
+        "max": 0.220388,
+        "median": 0.1928265,
+        "min": 0.177927,
+        "p95": 0.220388
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_cached_tokens": {
+        "count": 10,
+        "max": 448.0,
+        "median": 448.0,
+        "min": 448.0,
+        "p95": 448.0
+      },
+      "reuse_wall_time_s": {
+        "count": 10,
+        "max": 0.116147,
+        "median": 0.094687,
+        "min": 0.09026,
+        "p95": 0.116147
+      },
+      "runs": 10,
+      "transfer_bytes_total": {
+        "count": 10,
+        "max": 20643840.0,
+        "median": 20643840.0,
+        "min": 20643840.0,
+        "p95": 20643840.0
+      },
+      "worker_transfer_count": {
+        "count": 10,
+        "max": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "p95": 2.0
+      }
+    }
+  },
+  "schema_version": 1
+}

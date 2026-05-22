@@ -1,0 +1,2 @@
+{"event":"generic_kv_transfer_failed_counter","event_sequence":1,"failure_count":1,"run_id":"pydev-connector-failure:generic_counter_only:rep-001","timestamp_ns":1779462838207786718,"transfer_type":["CPU","GPU"]}
+{"event":"generic_request_error_counter","event_sequence":2,"request_failures":1,"run_id":"pydev-connector-failure:generic_counter_only:rep-001","timestamp_ns":1779462838207786719}

@@ -22,5 +22,7 @@ artifacts/*
 !artifacts/live_request_path_pydev_hook_disabled/**
 !artifacts/live_request_path_pydev_hook_enabled/
 !artifacts/live_request_path_pydev_hook_enabled/**
+!artifacts/pydev_connector_failure_semantics/
+!artifacts/pydev_connector_failure_semantics/**
 vendor/
 vllm/

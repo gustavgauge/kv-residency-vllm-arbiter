@@ -1,0 +1,296 @@
+{
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector mechanism only; not upstream ResidentClaim support and not production offload performance.",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "recompute",
+    "kv_role": "kv_both"
+  },
+  "disable_log_stats_required": true,
+  "evaluation": {
+    "analyzer_runtime_ns": 114091,
+    "connector_observation_success": true,
+    "event_counts": {
+      "offload_job_completed": 2,
+      "offload_load_job_created": 2,
+      "offload_load_job_failed": 1,
+      "offload_lookup_result": 3,
+      "offload_request_finished_no_pending_jobs": 2,
+      "offload_store_job_created": 1,
+      "offload_worker_load_failed": 1,
+      "offload_worker_transfer_finished": 3,
+      "offload_worker_transfer_submitted": 3,
+      "request_initialized": 2,
+      "resident_claim_offloaded": 1,
+      "resident_claim_restoration_failed": 1,
+      "resident_claim_restore_required": 2,
+      "resident_claim_restored": 1
+    },
+    "gate_summary": {
+      "claim_boundary": "Patched pydev vLLM OffloadingConnector evidence only; this is not native upstream ResidentClaim support or production offload performance.",
+      "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+      "controls": {
+        "fallback_recompute_counted_as_satisfaction": true,
+        "fallback_recompute_rejected": true,
+        "generic_counter_only_rejected": false,
+        "unclaimed_failure_rejected": false,
+        "wrong_claim_failure_rejected": false
+      },
+      "failure_missing_requirements": [
+        "fail_closed_active_request_refused",
+        "fallback_recompute_counted_as_satisfaction"
+      ],
+      "observation_missing_requirements": [],
+      "ordered_evidence": {
+        "failed_transfer": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_worker_transfer_finished",
+          "event_sequence": 13,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "success": false,
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_completed": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_job_completed",
+          "event_sequence": 23,
+          "job_id": 2,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path"
+        },
+        "load_created": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_load_job_created",
+          "event_sequence": 11,
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_failed": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_load_job_failed",
+          "event_sequence": 15,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_transfer_success": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_worker_transfer_finished",
+          "event_sequence": 21,
+          "job_id": 2,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "success": true,
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "lookup_hit": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_lookup_result",
+          "event_sequence": 9,
+          "num_hit_tokens": 448,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path"
+        },
+        "refusal": null,
+        "request_initialized": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "request_initialized",
+          "event_sequence": 0,
+          "request_id": "0-87103f8e",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path"
+        },
+        "restoration_failed": {
+          "blocking_claim_ids": [
+            "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path"
+          ],
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "resident_claim_restoration_failed",
+          "event_sequence": 16,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "outcome_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "restore_required": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "resident_claim_restore_required",
+          "event_sequence": 10,
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "restored": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "resident_claim_restored",
+          "event_sequence": 22,
+          "job_id": 2,
+          "key_count": 7,
+          "request_id": "1-beffd140",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "store_completed": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_job_completed",
+          "event_sequence": 6,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-87103f8e",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path"
+        },
+        "store_created": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_store_job_created",
+          "event_sequence": 2,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-87103f8e",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "GPU",
+            "CPU"
+          ]
+        },
+        "store_transfer": {
+          "claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "event": "offload_worker_transfer_finished",
+          "event_sequence": 4,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-87103f8e",
+          "resident_claim_id": "pydev-connector-failure:fallback_recompute:rep-001:claim:live-request-path",
+          "success": true,
+          "transfer_type": [
+            "GPU",
+            "CPU"
+          ]
+        }
+      },
+      "schema_version": 1
+    },
+    "restoration_failure_outcome_success": false
+  },
+  "event_bytes": 29139,
+  "event_count": 25,
+  "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/fallback_recompute/rep-001/fallback_recompute/vllm_runtime_events.jsonl",
+  "generated_at": "2026-05-22T15:12:08.999469+00:00",
+  "load_failure_to_outcome_latency_ns": null,
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "request_records": [
+    {
+      "exception": null,
+      "num_cached_tokens": 0,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 480,
+      "request_id": "0",
+      "role": "resident",
+      "status": "served",
+      "ttft_s": null,
+      "wall_latency_s": 0.201819
+    },
+    {
+      "connector_outcome": "fallback_recompute_not_claim_satisfaction",
+      "exception": null,
+      "num_cached_tokens": 448,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 481,
+      "request_id": "1",
+      "role": "reuse",
+      "status": "served_after_failed_load_recompute",
+      "ttft_s": null,
+      "wall_latency_s": 0.104901
+    }
+  ],
+  "run_id": "pydev-connector-failure:fallback_recompute:rep-001",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "scenario": "fallback_recompute",
+  "scenario_config": {
+    "allow_unclaimed_failure": false,
+    "claim_params": true,
+    "event_path": true,
+    "failure_target": "same_claim",
+    "inject_failure": true,
+    "kv_load_failure_policy": "recompute",
+    "synthetic_generic": false
+  },
+  "status": "ok",
+  "transfer_metrics": {
+    "directions": [
+      [
+        "GPU",
+        "CPU"
+      ],
+      [
+        "CPU",
+        "GPU"
+      ],
+      [
+        "CPU",
+        "GPU"
+      ]
+    ],
+    "worker_transfer_count": 3,
+    "worker_transfer_sizes": [
+      10321920,
+      10321920,
+      10321920
+    ],
+    "worker_transfer_times_s": [
+      0.0007351999878883362,
+      0.0005678719878196716,
+      0.0004264639914035797
+    ]
+  },
+  "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."
+}
