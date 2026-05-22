@@ -98,3 +98,60 @@ claim id, and prompt digest, not evidence of a native offload lifecycle. The
 events came from `Request` construction, not from the native offload connector.
 vLLM warned that no KVConnector was configured and disabled KVTransfer for those
 requests, so native offload support is still not claimed.
+
+## 2026-05-22 Pydev OffloadingConnector Probe
+
+The editable pydev lane can activate vLLM's Python-side
+`OffloadingConnector` in-process by passing `kv_transfer_config` to `LLM(...)`:
+
+```json
+{
+  "kv_connector": "OffloadingConnector",
+  "kv_role": "kv_both",
+  "kv_connector_extra_config": {
+    "block_size": 64,
+    "cpu_bytes_to_use": 536870912,
+    "store_threshold": 1
+  }
+}
+```
+
+Using `HuggingFaceTB/SmolLM2-135M-Instruct`, `max_model_len=512`,
+`max_tokens=8`, `enable_prefix_caching=True`, `enforce_eager=True`,
+`disable_log_stats=True`, and `VLLM_ENABLE_V1_MULTIPROCESSING=0`, the probe
+served a resident request, reset only the local prefix cache
+(`reset_connector=false`), and served a reuse request. The final run is under
+`artifacts/live_request_path_pydev_offload_connector_inprocess_joined/`.
+
+The final event stream contains 14 patched-runtime events:
+
+| Event | Count | Claim-joined |
+|---|---:|---:|
+| `request_initialized` | 2 | 2 |
+| `offload_lookup_result` | 2 | 2 |
+| `offload_store_job_created` | 1 | 1 |
+| `offload_load_job_created` | 1 | 1 |
+| `offload_worker_transfer_submitted` | 2 | 2 |
+| `offload_worker_transfer_finished` | 2 | 2 |
+| `offload_job_completed` | 2 | 2 |
+| `offload_request_finished_no_pending_jobs` | 2 | 2 |
+
+The resident request stored 7 offload blocks (`GPU -> CPU` worker transfer).
+After the local prefix-cache reset, the reuse request observed 448 external hit
+tokens, created one load job, and completed a `CPU -> GPU` worker transfer
+before request finish. Worker submit/finish events are joined through an
+env-gated job-id registry in the local pydev telemetry helper.
+
+This is stronger than request-path-coupled reference evidence: it shows that
+vLLM's real offload connector path can carry claim-scoped lifecycle
+observations in a patched pydev in-process run. It is still not ResidentClaim
+`offloadable` conformance. The run does not show runtime claim acceptance,
+predicate enforcement, restoration failure injection, claim-scoped refusal, or
+expiry/demotion/harm semantics.
+
+One route-specific issue remains: with `disable_log_stats=False`, the first
+connector run emitted a store and worker completion, then failed in vLLM's
+`OffloadingConnector` metrics observer with an `AssertionError` while processing
+transfer stats. The successful connector evidence therefore disables stats
+logging and records latency/request counters from the harness summary rather
+than vLLM stat logging.

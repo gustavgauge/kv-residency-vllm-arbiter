@@ -1,0 +1,226 @@
+{
+  "claim_boundary": "Request ids and timings come from vLLM LLM.generate where vLLM is available; offload lifecycle/outcome transitions are produced by the reference hook and are not native vLLM host-offload evidence.",
+  "generated_at": "2026-05-22T13:31:04.666676+00:00",
+  "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "overhead": {
+    "enabled_analyzer_runtime_ns": 53210,
+    "enabled_event_bytes_minus_no_hook": 13197,
+    "enabled_event_volume_minus_no_hook": 10,
+    "enabled_latency_s_minus_disabled": 0.0,
+    "enabled_latency_s_minus_no_hook": 0.0,
+    "enabled_trace_build_ns_minus_disabled": 1530
+  },
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "records": [
+    {
+      "active_claim_count": 0,
+      "analyzer_runtime_ns": 22980,
+      "claim_registry_size": 0,
+      "contract_event_order": [],
+      "event_bytes": 0,
+      "event_counts": {},
+      "event_volume": 0,
+      "hook_event_emission_enabled": false,
+      "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+      "jsonl": "artifacts/live_request_path_pydev_offload_probe_baseline_retry/no_hook.jsonl",
+      "label": "no_hook",
+      "native_vllm_offload_claimed": false,
+      "passes_reference_gate": false,
+      "reference_missing_requirements": [
+        "fixed_cache_identity_and_deterministic_request_token_map",
+        "materialization_predicate",
+        "offload_restorability",
+        "ordered_lifecycle_events",
+        "pre_registered_accepted_claim",
+        "restoration_failure_outcome",
+        "reusable_object_id",
+        "stable_claim_id_and_fixed_materialization_predicate"
+      ],
+      "request_metrics": {
+        "cached_tokens_after_first_request": [
+          464
+        ],
+        "latency_s_mean": 0.099658,
+        "latency_s_sum": 0.298974,
+        "output_tokens": 16,
+        "request_count": 3,
+        "served_request_count": 2,
+        "ttft_s_mean": 0.076272
+      },
+      "scenario": "baseline_no_hook",
+      "trace_build_ns": 28350
+    },
+    {
+      "active_claim_count": 0,
+      "analyzer_runtime_ns": 16130,
+      "claim_registry_size": 0,
+      "contract_event_order": [],
+      "event_bytes": 0,
+      "event_counts": {},
+      "event_volume": 0,
+      "hook_event_emission_enabled": false,
+      "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+      "jsonl": "artifacts/live_request_path_pydev_offload_probe_baseline_retry/hook_integrated_event_emission_disabled.jsonl",
+      "label": "hook_integrated_event_emission_disabled",
+      "native_vllm_offload_claimed": false,
+      "passes_reference_gate": false,
+      "reference_missing_requirements": [
+        "fixed_cache_identity_and_deterministic_request_token_map",
+        "materialization_predicate",
+        "offload_restorability",
+        "ordered_lifecycle_events",
+        "pre_registered_accepted_claim",
+        "restoration_failure_outcome",
+        "reusable_object_id",
+        "stable_claim_id_and_fixed_materialization_predicate"
+      ],
+      "request_metrics": {
+        "cached_tokens_after_first_request": [
+          464
+        ],
+        "latency_s_mean": 0.099658,
+        "latency_s_sum": 0.298974,
+        "output_tokens": 16,
+        "request_count": 3,
+        "served_request_count": 2,
+        "ttft_s_mean": 0.076272
+      },
+      "scenario": "positive_bundle",
+      "trace_build_ns": 56700
+    },
+    {
+      "active_claim_count": 1,
+      "analyzer_runtime_ns": 53210,
+      "claim_registry_size": 1,
+      "contract_event_order": [
+        "claim_accepted",
+        "predicate_materialized",
+        "claim_offloaded",
+        "restore_required_for_reuse",
+        "claim_restored_before_reuse",
+        "reuse_consumed_restored_state",
+        "claim_offloaded",
+        "restore_required_for_reuse",
+        "restoration_failed",
+        "active_request_refused"
+      ],
+      "event_bytes": 13197,
+      "event_counts": {
+        "active_request_refused": 1,
+        "resident_claim_accepted": 1,
+        "resident_claim_materialized": 1,
+        "resident_claim_offloaded": 2,
+        "resident_claim_restoration_failed": 1,
+        "resident_claim_restore_required": 2,
+        "resident_claim_restored": 1,
+        "resident_claim_reuse_after_restore": 1
+      },
+      "event_volume": 10,
+      "hook_event_emission_enabled": true,
+      "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+      "jsonl": "artifacts/live_request_path_pydev_offload_probe_baseline_retry/hook_integrated_event_emission_enabled.jsonl",
+      "label": "hook_integrated_event_emission_enabled",
+      "native_vllm_offload_claimed": false,
+      "passes_reference_gate": true,
+      "reference_missing_requirements": [],
+      "request_metrics": {
+        "cached_tokens_after_first_request": [
+          464
+        ],
+        "latency_s_mean": 0.099658,
+        "latency_s_sum": 0.298974,
+        "output_tokens": 16,
+        "request_count": 3,
+        "served_request_count": 2,
+        "ttft_s_mean": 0.076272
+      },
+      "scenario": "positive_bundle",
+      "trace_build_ns": 58230
+    },
+    {
+      "active_claim_count": 0,
+      "analyzer_runtime_ns": 18901,
+      "claim_registry_size": 0,
+      "contract_event_order": [],
+      "event_bytes": 1107,
+      "event_counts": {
+        "generic_kv_blocks_offloaded": 1,
+        "generic_kv_blocks_onboarded": 1
+      },
+      "event_volume": 2,
+      "hook_event_emission_enabled": true,
+      "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+      "jsonl": "artifacts/live_request_path_pydev_offload_probe_baseline_retry/false_positive_generic_substrate.jsonl",
+      "label": "false_positive_generic_substrate",
+      "native_vllm_offload_claimed": false,
+      "passes_reference_gate": false,
+      "reference_missing_requirements": [
+        "fixed_cache_identity_and_deterministic_request_token_map",
+        "materialization_predicate",
+        "offload_restorability",
+        "ordered_lifecycle_events",
+        "pre_registered_accepted_claim",
+        "restoration_failure_outcome",
+        "reusable_object_id",
+        "stable_claim_id_and_fixed_materialization_predicate"
+      ],
+      "request_metrics": {
+        "cached_tokens_after_first_request": [
+          464
+        ],
+        "latency_s_mean": 0.099658,
+        "latency_s_sum": 0.298974,
+        "output_tokens": 16,
+        "request_count": 3,
+        "served_request_count": 2,
+        "ttft_s_mean": 0.076272
+      },
+      "scenario": "generic_substrate",
+      "trace_build_ns": 20760
+    }
+  ],
+  "request_records": [
+    {
+      "num_cached_tokens": 0,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 480,
+      "request_id": "0",
+      "role": "resident",
+      "status": "served",
+      "ttft_s": 0.12490224838256836,
+      "wall_latency_s": 0.19838645699201152
+    },
+    {
+      "num_cached_tokens": 464,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 481,
+      "request_id": "1",
+      "role": "reuse",
+      "status": "served",
+      "ttft_s": 0.02764272689819336,
+      "wall_latency_s": 0.1005871140077943
+    },
+    {
+      "num_cached_tokens": null,
+      "num_output_tokens": 0,
+      "num_prompt_tokens": null,
+      "request_id": "2",
+      "role": "failure",
+      "status": "controlled_refusal_by_harness",
+      "ttft_s": null,
+      "wall_latency_s": 1.9000435713678598e-07
+    }
+  ],
+  "resident_claim_params_injected": true,
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "status": "ok"
+}

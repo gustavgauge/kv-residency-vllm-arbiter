@@ -1,0 +1,170 @@
+{
+  "claim_boundary": "Connector events are native patched pydev hook observations only if emitted by OffloadingConnector/OffloadingWorker paths; this is not ResidentClaim offloadable conformance.",
+  "claim_joined_event_counts": {
+    "offload_job_completed": 1,
+    "offload_lookup_result": 1,
+    "offload_store_job_created": 1,
+    "request_initialized": 1
+  },
+  "error": "",
+  "error_type": "AssertionError",
+  "event_count": 6,
+  "event_counts": {
+    "offload_job_completed": 1,
+    "offload_lookup_result": 1,
+    "offload_store_job_created": 1,
+    "offload_worker_transfer_finished": 1,
+    "offload_worker_transfer_submitted": 1,
+    "request_initialized": 1
+  },
+  "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/live_request_path_pydev_offload_connector_inprocess/vllm_runtime_events.jsonl",
+  "events_preview": [
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "cache_salt": null,
+      "event": "request_initialized",
+      "event_sequence": 0,
+      "has_kv_transfer_params": true,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "instrumentation_scope": "native_vllm_offloading_connector_probe_not_conformance",
+      "materialization_predicate": "leading_prefix_at_least(1)",
+      "monotonic_ns": 86287460135882,
+      "num_block_hashes": 30,
+      "num_prompt_tokens": 480,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:prompt:69cfb243421eb3ae",
+      "request_id": "0-b3cb7f51",
+      "request_token_map_id": "token-map:prompt:69cfb243421eb3ae",
+      "resident_claim": true,
+      "resident_claim_id": "pydev-offload-connector-inprocess:claim:live-request-path",
+      "resident_claim_role": "resident",
+      "reusable_object_id": "vllm-request-prefix:69cfb243421eb3ae",
+      "wall_time_ns": 1779456746478836135
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "event": "offload_lookup_result",
+      "event_sequence": 1,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "instrumentation_scope": "native_vllm_offloading_connector_probe_not_conformance",
+      "materialization_predicate": "leading_prefix_at_least(1)",
+      "monotonic_ns": 86287460369663,
+      "num_computed_tokens": 0,
+      "num_hit_tokens": 0,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:prompt:69cfb243421eb3ae",
+      "request_id": "0-b3cb7f51",
+      "request_token_map_id": "token-map:prompt:69cfb243421eb3ae",
+      "resident_claim": true,
+      "resident_claim_id": "pydev-offload-connector-inprocess:claim:live-request-path",
+      "resident_claim_role": "resident",
+      "reusable_object_id": "vllm-request-prefix:69cfb243421eb3ae",
+      "wall_time_ns": 1779456746479069586,
+      "will_load_async": false
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "event": "offload_store_job_created",
+      "event_sequence": 2,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "instrumentation_scope": "native_vllm_offloading_connector_probe_not_conformance",
+      "job_id": 0,
+      "key_count": 7,
+      "materialization_predicate": "leading_prefix_at_least(1)",
+      "monotonic_ns": 86287460662994,
+      "num_offloadable_tokens": 480,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:prompt:69cfb243421eb3ae",
+      "request_id": "0-b3cb7f51",
+      "request_token_map_id": "token-map:prompt:69cfb243421eb3ae",
+      "resident_claim": true,
+      "resident_claim_id": "pydev-offload-connector-inprocess:claim:live-request-path",
+      "resident_claim_role": "resident",
+      "reusable_object_id": "vllm-request-prefix:69cfb243421eb3ae",
+      "src_block_count": 28,
+      "wall_time_ns": 1779456746479362877
+    },
+    {
+      "event": "offload_worker_transfer_submitted",
+      "event_sequence": 3,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "job_id": 0,
+      "monotonic_ns": 86287504948606,
+      "submitted": true,
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ],
+      "wall_time_ns": 1779456746523648569
+    },
+    {
+      "event": "offload_worker_transfer_finished",
+      "event_sequence": 4,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "job_id": 0,
+      "monotonic_ns": 86287574702682,
+      "success": true,
+      "transfer_size": 10321920,
+      "transfer_time": 0.0007239680290222168,
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ],
+      "wall_time_ns": 1779456746593402905
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "event": "offload_job_completed",
+      "event_sequence": 5,
+      "hook_scope": "pydev_offloading_connector_inprocess",
+      "instrumentation_scope": "native_vllm_offloading_connector_probe_not_conformance",
+      "is_store": true,
+      "job_id": 0,
+      "key_count": 7,
+      "materialization_predicate": "leading_prefix_at_least(1)",
+      "monotonic_ns": 86287588237441,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:prompt:69cfb243421eb3ae",
+      "request_id": "0-b3cb7f51",
+      "request_token_map_id": "token-map:prompt:69cfb243421eb3ae",
+      "resident_claim": true,
+      "resident_claim_id": "pydev-offload-connector-inprocess:claim:live-request-path",
+      "resident_claim_role": "resident",
+      "reusable_object_id": "vllm-request-prefix:69cfb243421eb3ae",
+      "wall_time_ns": 1779456746606937334
+    }
+  ],
+  "generated_at": "2026-05-22T13:32:19.213987+00:00",
+  "llm_kwargs": {
+    "disable_log_stats": false,
+    "dtype": "half",
+    "enable_prefix_caching": true,
+    "enforce_eager": true,
+    "gpu_memory_utilization": 0.35,
+    "kv_transfer_config": {
+      "kv_connector": "OffloadingConnector",
+      "kv_connector_extra_config": {
+        "block_size": 64,
+        "cpu_bytes_to_use": 536870912,
+        "store_threshold": 1
+      },
+      "kv_role": "kv_both"
+    },
+    "max_model_len": 512,
+    "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "trust_remote_code": true
+  },
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "request_records": [],
+  "route": "official_inprocess_kv_transfer_config",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "status": "error"
+}
