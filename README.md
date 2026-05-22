@@ -54,6 +54,7 @@ artifacts/
   live_scheduler_pressure/  # vllm.LLM.generate pressure-path evidence
   pydev_connector_failure_semantics/
                              # patched connector lifecycle/outcome evidence
+  provenance/                # portable evidence manifests
   prior_art/                # semantic boundary matrix
 docs/
   contract.md               # ResidentClaim contract
@@ -153,6 +154,8 @@ historical connector-level provenance.
   one normalized row per generated repetition.
 - `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/*/rep-001/`:
   representative raw traces retained for each scenario.
+- `artifacts/provenance/resident_claim_scheduler_boundary_manifest.json`:
+  portable relative-path provenance for the scheduler-boundary evidence bundle.
 - `artifacts/prior_art/prior_art_boundary.md`: semantic comparison against
   adjacent runtime primitives.
 - `docs/public_artifact_notes.md`: provenance notes for historical absolute

@@ -36,6 +36,17 @@ The historical connector-level repeated run set keeps its generated run-set id,
 rewrite provenance. The canonical scheduler-boundary repeated run set is
 `20260522Tresident_claim_scheduler_boundary`.
 
+For portable public review, use the normalized manifest:
+
+- `artifacts/provenance/resident_claim_scheduler_boundary_manifest.json`
+
+That file records relative artifact paths, the run-set id, the parent evidence
+commit, the artifact evidence commit at provenance repair time, the vLLM base
+commit, and the complete local vLLM patch stack through the scheduler-boundary
+commit. The manifest is the preferred machine-readable provenance layer; raw
+generated summaries may still preserve absolute local paths as historical run
+metadata.
+
 ## Public Evidence Footprint
 
 The checked-in repeated-run footprint keeps the aggregate files and one

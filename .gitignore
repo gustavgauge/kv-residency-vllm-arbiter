@@ -24,6 +24,8 @@ artifacts/*
 !artifacts/live_request_path_pydev_hook_enabled/**
 !artifacts/pydev_connector_failure_semantics/
 !artifacts/pydev_connector_failure_semantics/**
+!artifacts/provenance/
+!artifacts/provenance/**
 artifacts/**/run.log
 vendor/
 vllm/

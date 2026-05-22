@@ -178,7 +178,20 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
             parent_commit="parent",
             artifact_commit="artifact",
             vllm_base_commit="base",
-            vllm_patch_commits=[{"commit": "patch", "subject": "subject"}],
+            vllm_patch_commits=[
+                {
+                    "commit": "patch-observe",
+                    "subject": "Add ResidentClaim connector telemetry probe",
+                },
+                {
+                    "commit": "patch-failure",
+                    "subject": "Add ResidentClaim load failure semantics probe",
+                },
+                {
+                    "commit": "patch-scheduler",
+                    "subject": "Add ResidentClaim scheduler boundary telemetry probe",
+                },
+            ],
             runner_path="/runner",
         ),
         repetition_id="rep-001",
@@ -199,6 +212,10 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
     assert normalized["blocking_claim_ids"] == [CLAIM]
     assert normalized["claim_id"] == CLAIM
     assert normalized["predicate_id"] == "predicate:test"
+    assert normalized["vllm_observation_patch_commit"] == "patch-observe"
+    assert normalized["vllm_failure_semantics_patch_commit"] == "patch-failure"
+    assert normalized["vllm_scheduler_boundary_patch_commit"] == "patch-scheduler"
+    assert normalized["vllm_patch_stack_head"] == "patch-scheduler"
     assert normalized["transfer_bytes_total"] == 64
     assert normalized["failure_to_outcome_latency_ns"] == 2_000
     assert (

@@ -1,0 +1,72 @@
+{
+  "artifacts": {
+    "aggregate_json": "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.json",
+    "aggregate_markdown": "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.md",
+    "normalized_summaries_jsonl": "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/normalized_summaries.jsonl",
+    "representative_normalized_summaries": [
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/claimed_load_failure/rep-001/claimed_load_failure/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/fallback_recompute/rep-001/fallback_recompute/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/generic_counter_only/rep-001/generic_counter_only/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/ordinary_offload_no_claim/rep-001/ordinary_offload_no_claim/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/success_no_event_path/rep-001/success_no_event_path/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/success_path/rep-001/success_path/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/unclaimed_load_failure/rep-001/unclaimed_load_failure/normalized_summary.json",
+      "artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/wrong_claim_failure/rep-001/wrong_claim_failure/normalized_summary.json"
+    ]
+  },
+  "claim_boundary": {
+    "non_claims": [
+      "upstream or native vLLM ResidentClaim support",
+      "scheduler-native pre-admission refusal",
+      "production offload performance",
+      "TensorRT/SGLang/Dynamo native conformance"
+    ],
+    "positive": "backend_patch evidence for offloadable lifecycle/outcome obligations under controlled same-claim restoration failure."
+  },
+  "manifest_id": "resident_claim_scheduler_boundary",
+  "parent": {
+    "branch_note": "private parent evidence branch name intentionally omitted from the public artifact manifest; use the commit identity and parent repository documentation.",
+    "evidence_commit": "3177c585b1e04c80a8b638fc4262cad83804c40b"
+  },
+  "public_artifact": {
+    "branch": "resident-claim-lifecycle-outcome",
+    "evidence_commit_before_provenance_repair": "ee67a873b230de6b91cb9bcc20617849537428a0",
+    "manifest_containing_commit": "see enclosing git commit containing this file"
+  },
+  "purpose": "Portable provenance layer for the scheduler-boundary ResidentClaim offload lifecycle/outcome evidence. Raw generated summaries may retain absolute local paths as historical provenance; this manifest records relative artifact paths and exact evidence identities.",
+  "run_scope": "local patched pydev vLLM OffloadingConnector plus scheduler invalid-KV-load boundary; not upstream/native vLLM support, not production offload performance, and not pre-admission scheduler refusal.",
+  "run_set_id": "20260522Tresident_claim_scheduler_boundary",
+  "scenario_repetitions": {
+    "claimed_load_failure": 30,
+    "fallback_recompute": 10,
+    "generic_counter_only": 1,
+    "ordinary_offload_no_claim": 10,
+    "success_no_event_path": 30,
+    "success_path": 30,
+    "unclaimed_load_failure": 10,
+    "wrong_claim_failure": 10
+  },
+  "schema_version": 1,
+  "vllm": {
+    "base_commit": "9b9d5dbaab852a1c615fe83a7f92881d353503db",
+    "patch_commits": [
+      {
+        "commit": "8d36813872db685823242be68bc907b5c6faade2",
+        "subject": "Add ResidentClaim connector telemetry probe"
+      },
+      {
+        "commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+        "subject": "Add ResidentClaim load failure semantics probe"
+      },
+      {
+        "commit": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+        "subject": "Add ResidentClaim scheduler boundary telemetry probe"
+      }
+    ],
+    "version_string": "0.21.1rc1.dev182+g9b9dbaa",
+    "vllm_failure_semantics_patch_commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+    "vllm_observation_patch_commit": "8d36813872db685823242be68bc907b5c6faade2",
+    "vllm_patch_stack_head": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+    "vllm_scheduler_boundary_patch_commit": "0b129d97135c1f01cc907008b7c93ad65256ea64"
+  }
+}

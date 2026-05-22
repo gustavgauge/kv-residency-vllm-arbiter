@@ -108,13 +108,27 @@ def collect_provenance(
     patch_commits: list[dict[str, str]] = []
     vllm_base_commit = None
     if vllm_source is not None:
-        vllm_base_commit = git_output(vllm_source, "rev-parse", "HEAD~2")
+        vllm_base_commit = git_output(
+            vllm_source,
+            "merge-base",
+            "HEAD",
+            "origin/main",
+            allow_failure=True,
+        )
+        if not vllm_base_commit:
+            vllm_base_commit = git_output(
+                vllm_source,
+                "rev-parse",
+                "HEAD~3",
+                allow_failure=True,
+            )
+        revision_range = f"{vllm_base_commit}..HEAD" if vllm_base_commit else "HEAD~3..HEAD"
         for line in git_output(
             vllm_source,
             "log",
             "--reverse",
             "--format=%H%x00%s",
-            "HEAD~2..HEAD",
+            revision_range,
             allow_failure=True,
         ).splitlines():
             if "\x00" not in line:
@@ -182,6 +196,7 @@ def normalize_summary(
         "artifact_commit": provenance.artifact_commit,
         "vllm_base_commit": provenance.vllm_base_commit,
         "vllm_patch_commits": provenance.vllm_patch_commits,
+        **_patch_commit_aliases(provenance.vllm_patch_commits),
         "model": raw.get("model"),
         "gpu": raw.get("runtime", {}).get("device0"),
         "runner_path": provenance.runner_path or raw.get("python"),
@@ -259,6 +274,30 @@ def normalize_summary(
         ),
     }
     return normalized
+
+
+def _patch_commit_aliases(
+    patch_commits: list[dict[str, str]],
+) -> dict[str, str | None]:
+    aliases: dict[str, str | None] = {
+        "vllm_observation_patch_commit": None,
+        "vllm_failure_semantics_patch_commit": None,
+        "vllm_scheduler_boundary_patch_commit": None,
+        "vllm_patch_stack_head": None,
+    }
+    for item in patch_commits:
+        commit = item.get("commit")
+        subject = item.get("subject", "").lower()
+        if not commit:
+            continue
+        aliases["vllm_patch_stack_head"] = commit
+        if "connector telemetry" in subject:
+            aliases["vllm_observation_patch_commit"] = commit
+        elif "load failure semantics" in subject:
+            aliases["vllm_failure_semantics_patch_commit"] = commit
+        elif "scheduler boundary" in subject:
+            aliases["vllm_scheduler_boundary_patch_commit"] = commit
+    return aliases
 
 
 def aggregate_normalized(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:

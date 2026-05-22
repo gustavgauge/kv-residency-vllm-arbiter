@@ -1,6 +1,6 @@
 {
   "analyzer_runtime_ns": 24350,
-  "artifact_commit": "0b3cfdc27cb7750c1f4e3676488be543d431ee17",
+  "artifact_commit": "ee67a873b230de6b91cb9bcc20617849537428a0",
   "blocking_claim_ids": [],
   "claim_boundary": "Local patched pydev vLLM OffloadingConnector plus scheduler-side invalid-KV-load boundary mechanism only; not upstream ResidentClaim support, not production offload performance, and not pre-admission refusal.",
   "claim_id": null,
@@ -50,7 +50,7 @@
   "observation_gate_result": false,
   "ordered_event_sequence": [],
   "output_tokens": 16,
-  "parent_commit": "fd74e6d4cbfd067dc5e13541c4f9dfedfe157713",
+  "parent_commit": "3177c585b1e04c80a8b638fc4262cad83804c40b",
   "predicate_id": null,
   "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
   "raw_event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/success_no_event_path/rep-001/success_no_event_path/vllm_runtime_events.jsonl",
@@ -82,6 +82,8 @@
   "transfer_bytes_total": 0,
   "transfer_directions": [],
   "vllm_base_commit": "9b9d5dbaab852a1c615fe83a7f92881d353503db",
+  "vllm_failure_semantics_patch_commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+  "vllm_observation_patch_commit": "8d36813872db685823242be68bc907b5c6faade2",
   "vllm_patch_commits": [
     {
       "commit": "8d36813872db685823242be68bc907b5c6faade2",
@@ -90,7 +92,13 @@
     {
       "commit": "52eaee2107faa122a8997b79ea8144c363028edb",
       "subject": "Add ResidentClaim load failure semantics probe"
+    },
+    {
+      "commit": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+      "subject": "Add ResidentClaim scheduler boundary telemetry probe"
     }
   ],
+  "vllm_patch_stack_head": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+  "vllm_scheduler_boundary_patch_commit": "0b129d97135c1f01cc907008b7c93ad65256ea64",
   "worker_transfer_count": 0
 }
