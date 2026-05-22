@@ -39,6 +39,7 @@ DEFAULT_RUNNER = os.environ.get("VLLM_AUDIT_PYTHON")
 DEFAULT_TARGETS = {
     "success_no_event_path": 30,
     "success_path": 30,
+    "ordinary_offload_no_claim": 10,
     "claimed_load_failure": 30,
     "wrong_claim_failure": 10,
     "unclaimed_load_failure": 10,

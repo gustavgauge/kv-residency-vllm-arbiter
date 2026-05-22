@@ -70,8 +70,15 @@ def base_success_events() -> list[dict]:
     ]
 
 
-def failure_tail(start_sequence: int = 8, claim_id: str = CLAIM) -> list[dict]:
-    return [
+def failure_tail(
+    start_sequence: int = 8,
+    claim_id: str = CLAIM,
+    *,
+    scheduler_refusal: bool = True,
+    connector_refusal: bool = True,
+    outcome_type: str = "refusal",
+) -> list[dict]:
+    events = [
         {
             "event": "offload_worker_transfer_finished",
             "event_sequence": start_sequence,
@@ -82,30 +89,71 @@ def failure_tail(start_sequence: int = 8, claim_id: str = CLAIM) -> list[dict]:
             "failure_injection_flag": True,
         },
         {
-            "event": "offload_load_job_failed",
+            "event": "scheduler_resident_claim_restoration_failed",
             "event_sequence": start_sequence + 1,
             "claim_id": claim_id,
-            "job_id": 1,
-            "is_store": False,
-        },
-        {
-            "event": "resident_claim_restoration_failed",
-            "event_sequence": start_sequence + 2,
-            "claim_id": claim_id,
-            "job_id": 1,
             "outcome_claim_id": claim_id,
-            "controlled_restoration_unavailable": True,
-            "failure_injection_flag": True,
-        },
-        {
-            "event": "active_request_refused",
-            "event_sequence": start_sequence + 3,
-            "claim_id": claim_id,
-            "job_id": 1,
-            "outcome_claim_id": claim_id,
-            "blocking_claim_ids": [claim_id],
+            "scheduler_side_failure_outcome": True,
+            "scheduler_side_refusal": scheduler_refusal,
+            "native_scheduler_admission_refusal": False,
+            "finish_status": "FINISHED_ERROR",
+            "finish_reason": "error",
+            "blocking_claim_ids": [claim_id] if scheduler_refusal else [],
         },
     ]
+    if scheduler_refusal:
+        events.append(
+            {
+                "event": "scheduler_active_request_refused",
+                "event_sequence": start_sequence + 2,
+                "claim_id": claim_id,
+                "outcome_claim_id": claim_id,
+                "blocking_claim_ids": [claim_id],
+                "scheduler_side_refusal": True,
+                "native_scheduler_admission_refusal": False,
+                "finish_status": "FINISHED_ERROR",
+                "finish_reason": "error",
+            }
+        )
+    termination_after = events[-1]["event_sequence"] + 1
+    events.extend(
+        [
+            {
+                "event": "offload_request_finished_pending_jobs",
+                "event_sequence": termination_after,
+                "claim_id": claim_id,
+            },
+            {
+                "event": "offload_load_job_failed",
+                "event_sequence": termination_after + 1,
+                "claim_id": claim_id,
+                "job_id": 1,
+                "is_store": False,
+            },
+            {
+                "event": "resident_claim_restoration_failed",
+                "event_sequence": termination_after + 2,
+                "claim_id": claim_id,
+                "job_id": 1,
+                "outcome_claim_id": claim_id,
+                "controlled_restoration_unavailable": True,
+                "failure_injection_flag": True,
+                "claim_scoped_outcome_type": outcome_type,
+            },
+        ]
+    )
+    if connector_refusal:
+        events.append(
+            {
+                "event": "active_request_refused",
+                "event_sequence": termination_after + 3,
+                "claim_id": claim_id,
+                "job_id": 1,
+                "outcome_claim_id": claim_id,
+                "blocking_claim_ids": [claim_id],
+            }
+        )
+    return events
 
 
 def test_success_path_classifies_connector_observation() -> None:
@@ -124,6 +172,9 @@ def test_claimed_load_failure_requires_matching_refusal() -> None:
     result = evaluate_pydev_connector_events(events)
 
     assert result.restoration_failure_outcome_success
+    assert result.gate_summary["scheduler_side_failure_outcome_present"]
+    assert result.gate_summary["scheduler_side_refusal_present"]
+    assert result.gate_summary["scheduler_event_before_or_at_termination"]
 
 
 def test_wrong_claim_failure_is_rejected() -> None:
@@ -159,9 +210,10 @@ def test_unclaimed_failure_is_not_claim_scoped() -> None:
 
 
 def test_fallback_recompute_without_refusal_is_rejected() -> None:
-    events = base_success_events()[:7] + failure_tail()[:-1]
-    events[-1]["claim_scoped_outcome_type"] = (
-        "fallback_recompute_without_claim_satisfaction"
+    events = base_success_events()[:7] + failure_tail(
+        scheduler_refusal=False,
+        connector_refusal=False,
+        outcome_type="fallback_recompute_without_claim_satisfaction",
     )
 
     result = evaluate_pydev_connector_events(events)

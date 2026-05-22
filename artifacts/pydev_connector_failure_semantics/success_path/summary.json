@@ -1,8 +1,18 @@
 {
   "claim_boundary": "Local patched pydev vLLM OffloadingConnector mechanism only; not upstream ResidentClaim support and not production offload performance.",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
   "disable_log_stats_required": true,
   "evaluation": {
-    "analyzer_runtime_ns": 68429,
+    "analyzer_runtime_ns": 78130,
     "connector_observation_success": true,
     "event_counts": {
       "offload_job_completed": 2,
@@ -18,20 +28,30 @@
       "resident_claim_restored": 1
     },
     "gate_summary": {
+      "blocking_claim_ids": [],
       "claim_boundary": "Patched pydev vLLM OffloadingConnector evidence only; this is not native upstream ResidentClaim support or production offload performance.",
       "claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
+      "connector_level_outcome_present": false,
       "controls": {
         "fallback_recompute_counted_as_satisfaction": false,
         "fallback_recompute_rejected": false,
         "generic_counter_only_rejected": false,
+        "ordinary_offload_without_claim_rejected": false,
         "unclaimed_failure_rejected": false,
         "wrong_claim_failure_rejected": true
       },
       "failure_missing_requirements": [
         "claim_scoped_restoration_failed",
         "controlled_cpu_to_gpu_load_failure",
-        "fail_closed_active_request_refused"
+        "fail_closed_active_request_refused",
+        "scheduler_event_before_or_at_termination",
+        "scheduler_side_active_request_refused",
+        "scheduler_side_claim_match",
+        "scheduler_side_restoration_failed"
       ],
+      "finish_reason": null,
+      "finish_status": null,
+      "native_scheduler_admission_refusal": false,
       "observation_missing_requirements": [],
       "ordered_evidence": {
         "failed_transfer": null,
@@ -41,7 +61,7 @@
           "event_sequence": 15,
           "job_id": 1,
           "key_count": 7,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path"
         },
         "load_created": {
@@ -50,7 +70,7 @@
           "event_sequence": 11,
           "job_id": 1,
           "key_count": 7,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "transfer_type": [
             "CPU",
@@ -64,7 +84,7 @@
           "event_sequence": 13,
           "job_id": 1,
           "key_count": 7,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "success": true,
           "transfer_type": [
@@ -77,7 +97,7 @@
           "event": "offload_lookup_result",
           "event_sequence": 9,
           "num_hit_tokens": 448,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path"
         },
         "refusal": null,
@@ -85,9 +105,10 @@
           "claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "event": "request_initialized",
           "event_sequence": 0,
-          "request_id": "0-890c7650",
+          "request_id": "0-bcc7eb0c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path"
         },
+        "request_termination": null,
         "restoration_failed": null,
         "restore_required": {
           "claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
@@ -95,7 +116,7 @@
           "event_sequence": 10,
           "job_id": 1,
           "key_count": 7,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "transfer_type": [
             "CPU",
@@ -108,20 +129,22 @@
           "event_sequence": 14,
           "job_id": 1,
           "key_count": 7,
-          "request_id": "1-b7498231",
+          "request_id": "1-b2c2207c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "transfer_type": [
             "CPU",
             "GPU"
           ]
         },
+        "scheduler_refusal": null,
+        "scheduler_restoration_failed": null,
         "store_completed": {
           "claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "event": "offload_job_completed",
           "event_sequence": 6,
           "job_id": 0,
           "key_count": 7,
-          "request_id": "0-890c7650",
+          "request_id": "0-bcc7eb0c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path"
         },
         "store_created": {
@@ -130,7 +153,7 @@
           "event_sequence": 2,
           "job_id": 0,
           "key_count": 7,
-          "request_id": "0-890c7650",
+          "request_id": "0-bcc7eb0c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "transfer_type": [
             "GPU",
@@ -143,7 +166,7 @@
           "event_sequence": 4,
           "job_id": 0,
           "key_count": 7,
-          "request_id": "0-890c7650",
+          "request_id": "0-bcc7eb0c",
           "resident_claim_id": "pydev-connector-failure:success_path:claim:live-request-path",
           "success": true,
           "transfer_type": [
@@ -152,14 +175,18 @@
           ]
         }
       },
+      "scheduler_event_before_or_at_termination": false,
+      "scheduler_side_claim_match": false,
+      "scheduler_side_failure_outcome_present": false,
+      "scheduler_side_refusal_present": false,
       "schema_version": 1
     },
     "restoration_failure_outcome_success": false
   },
-  "event_bytes": 17924,
+  "event_bytes": 17941,
   "event_count": 17,
   "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/success_path/vllm_runtime_events.jsonl",
-  "generated_at": "2026-05-22T14:14:55.889707+00:00",
+  "generated_at": "2026-05-22T20:21:49.489344+00:00",
   "load_failure_to_outcome_latency_ns": null,
   "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
   "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
@@ -173,7 +200,7 @@
       "role": "resident",
       "status": "served",
       "ttft_s": null,
-      "wall_latency_s": 0.19456
+      "wall_latency_s": 0.17609
     },
     {
       "exception": null,
@@ -184,7 +211,7 @@
       "role": "reuse",
       "status": "served",
       "ttft_s": null,
-      "wall_latency_s": 0.090184
+      "wall_latency_s": 0.090613
     }
   ],
   "run_id": "pydev-connector-failure:success_path",
@@ -198,6 +225,15 @@
     "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
   },
   "scenario": "success_path",
+  "scenario_config": {
+    "allow_unclaimed_failure": false,
+    "claim_params": true,
+    "event_path": true,
+    "failure_target": null,
+    "inject_failure": false,
+    "kv_load_failure_policy": "fail",
+    "synthetic_generic": false
+  },
   "status": "ok",
   "transfer_metrics": {
     "directions": [
@@ -216,8 +252,8 @@
       10321920
     ],
     "worker_transfer_times_s": [
-      0.0007241600155830384,
-      0.0005649279952049255
+      0.0007546560168266296,
+      0.0005650879740715027
     ]
   },
   "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."

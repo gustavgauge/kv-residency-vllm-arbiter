@@ -1,0 +1,391 @@
+{
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector plus scheduler-side invalid-KV-load boundary mechanism only; not upstream ResidentClaim support, not production offload performance, and not pre-admission refusal.",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
+  "disable_log_stats_required": true,
+  "evaluation": {
+    "analyzer_runtime_ns": 124159,
+    "connector_observation_success": false,
+    "event_counts": {
+      "active_request_refused": 1,
+      "offload_job_completed": 1,
+      "offload_load_job_created": 1,
+      "offload_load_job_failed": 1,
+      "offload_lookup_result": 2,
+      "offload_request_finished_no_pending_jobs": 1,
+      "offload_request_finished_pending_jobs": 1,
+      "offload_store_job_created": 1,
+      "offload_worker_load_failed": 1,
+      "offload_worker_transfer_finished": 2,
+      "offload_worker_transfer_submitted": 2,
+      "request_initialized": 2,
+      "resident_claim_offloaded": 1,
+      "resident_claim_restoration_failed": 1,
+      "resident_claim_restore_required": 1,
+      "scheduler_active_request_refused": 1,
+      "scheduler_resident_claim_restoration_failed": 1
+    },
+    "gate_summary": {
+      "blocking_claim_ids": [
+        "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+      ],
+      "claim_boundary": "Patched pydev vLLM OffloadingConnector plus scheduler-side invalid-KV-load boundary evidence only; this is not native upstream ResidentClaim support, production offload performance, or pre-admission refusal.",
+      "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+      "connector_level_outcome_present": true,
+      "controls": {
+        "fallback_recompute_counted_as_satisfaction": false,
+        "fallback_recompute_observed_after_failure": false,
+        "fallback_recompute_rejected": false,
+        "generic_counter_only_rejected": false,
+        "ordinary_offload_without_claim_rejected": false,
+        "unclaimed_failure_rejected": false,
+        "wrong_claim_failure_rejected": false
+      },
+      "failure_missing_requirements": [],
+      "finish_reason": "error",
+      "finish_status": "FINISHED_ERROR",
+      "native_scheduler_admission_refusal": false,
+      "observation_missing_requirements": [
+        "cpu_to_gpu_restore_success"
+      ],
+      "ordered_evidence": {
+        "failed_transfer": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_worker_transfer_finished",
+          "event_sequence": 13,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "success": false,
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_completed": null,
+        "load_created": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_load_job_created",
+          "event_sequence": 11,
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_failed": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_load_job_failed",
+          "event_sequence": 18,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "load_transfer_success": null,
+        "lookup_hit": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_lookup_result",
+          "event_sequence": 9,
+          "num_hit_tokens": 448,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+        },
+        "refusal": {
+          "blocking_claim_ids": [
+            "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+          ],
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "active_request_refused",
+          "event_sequence": 20,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "native_scheduler_refusal": false,
+          "outcome_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "scheduler_finish_status": "<RequestStatus.FINISHED_ERROR: 11>"
+        },
+        "request_initialized": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "request_initialized",
+          "event_sequence": 0,
+          "request_id": "0-a4ca091b",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+        },
+        "request_termination": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_request_finished_pending_jobs",
+          "event_sequence": 17,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+        },
+        "restoration_failed": {
+          "blocking_claim_ids": [
+            "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+          ],
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "resident_claim_restoration_failed",
+          "event_sequence": 19,
+          "failure_reason": "controlled_resident_claim_cpu_to_gpu_load_failure",
+          "job_id": 1,
+          "key_count": 7,
+          "outcome_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "restore_required": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "resident_claim_restore_required",
+          "event_sequence": 10,
+          "job_id": 1,
+          "key_count": 7,
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "restored": null,
+        "scheduler_refusal": {
+          "blocking_claim_ids": [
+            "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+          ],
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "scheduler_active_request_refused",
+          "event_sequence": 16,
+          "finish_reason": "error",
+          "finish_status": "FINISHED_ERROR",
+          "invalid_block_count": 28,
+          "invalid_block_ids": [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "native_scheduler_admission_refusal": false,
+          "native_scheduler_refusal": false,
+          "outcome_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "scheduler_failure_policy": "fail",
+          "scheduler_side_failure_outcome": true,
+          "scheduler_side_refusal": true
+        },
+        "scheduler_restoration_failed": {
+          "blocking_claim_ids": [
+            "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+          ],
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "scheduler_resident_claim_restoration_failed",
+          "event_sequence": 15,
+          "finish_reason": "error",
+          "finish_status": "FINISHED_ERROR",
+          "invalid_block_count": 28,
+          "invalid_block_ids": [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "native_scheduler_admission_refusal": false,
+          "native_scheduler_refusal": false,
+          "outcome_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "request_id": "1-bd2c1932",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "scheduler_failure_policy": "fail",
+          "scheduler_side_failure_outcome": true,
+          "scheduler_side_refusal": true
+        },
+        "store_completed": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_job_completed",
+          "event_sequence": 6,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-a4ca091b",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path"
+        },
+        "store_created": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_store_job_created",
+          "event_sequence": 2,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-a4ca091b",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "transfer_type": [
+            "GPU",
+            "CPU"
+          ]
+        },
+        "store_transfer": {
+          "claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "event": "offload_worker_transfer_finished",
+          "event_sequence": 4,
+          "job_id": 0,
+          "key_count": 7,
+          "request_id": "0-a4ca091b",
+          "resident_claim_id": "pydev-connector-failure:claimed_load_failure:rep-001:claim:live-request-path",
+          "success": true,
+          "transfer_type": [
+            "GPU",
+            "CPU"
+          ]
+        }
+      },
+      "scheduler_event_before_or_at_termination": true,
+      "scheduler_side_claim_match": true,
+      "scheduler_side_failure_outcome_present": true,
+      "scheduler_side_refusal_present": true,
+      "schema_version": 1
+    },
+    "restoration_failure_outcome_success": true
+  },
+  "event_bytes": 26702,
+  "event_count": 21,
+  "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/claimed_load_failure/rep-001/claimed_load_failure/vllm_runtime_events.jsonl",
+  "generated_at": "2026-05-22T21:08:20.629848+00:00",
+  "load_failure_to_outcome_latency_ns": 77010,
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "request_records": [
+    {
+      "exception": null,
+      "num_cached_tokens": 0,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 480,
+      "request_id": "0",
+      "role": "resident",
+      "status": "served",
+      "ttft_s": null,
+      "wall_latency_s": 0.17833
+    },
+    {
+      "connector_outcome": "active_request_refused",
+      "exception": null,
+      "num_cached_tokens": 0,
+      "num_output_tokens": 0,
+      "num_prompt_tokens": 481,
+      "request_id": "1",
+      "role": "reuse",
+      "status": "controlled_refused",
+      "ttft_s": null,
+      "wall_latency_s": 0.003132
+    }
+  ],
+  "run_id": "pydev-connector-failure:claimed_load_failure:rep-001",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "scenario": "claimed_load_failure",
+  "scenario_config": {
+    "allow_unclaimed_failure": false,
+    "claim_params": true,
+    "event_path": true,
+    "failure_target": "same_claim",
+    "inject_failure": true,
+    "kv_load_failure_policy": "fail",
+    "synthetic_generic": false
+  },
+  "status": "ok",
+  "transfer_metrics": {
+    "directions": [
+      [
+        "GPU",
+        "CPU"
+      ],
+      [
+        "CPU",
+        "GPU"
+      ]
+    ],
+    "worker_transfer_count": 2,
+    "worker_transfer_sizes": [
+      10321920,
+      10321920
+    ],
+    "worker_transfer_times_s": [
+      0.0007174720168113709,
+      0.0005650240182876587
+    ]
+  },
+  "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."
+}

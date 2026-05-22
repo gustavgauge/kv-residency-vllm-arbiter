@@ -124,7 +124,7 @@ $VLLM_AUDIT_PYTHON scripts/run_pydev_connector_failure_semantics.py \
   --scenario claimed_load_failure
 
 python3 scripts/run_pydev_connector_failure_repetitions.py \
-  --run-set-id 20260522Tresident_claim_connector_failure_repetitions
+  --run-set-id 20260522Tresident_claim_scheduler_boundary
 ```
 
 The full repetition harness is GPU-backed and comparatively expensive. For
@@ -133,10 +133,10 @@ fast local checks, use `uv run --with pytest pytest -q` and
 
 ## Key Evidence
 
-The repeated connector directory named
-`20260522Tpaper2_connector_failure_repetitions` is a historical run-set id
-preserved as provenance; the internal tag in that id is not part of the public
-claim.
+The canonical scheduler-boundary connector run is
+`20260522Tresident_claim_scheduler_boundary`. The older
+`20260522Tpaper2_connector_failure_repetitions` directory is preserved as
+historical connector-level provenance.
 
 - `artifacts/conformance/results.json`: seven trace/materialization checks plus
   one capability-classification check.
@@ -146,12 +146,12 @@ claim.
   the `60 resident + 70 active = 130 usable blocks` boundary.
 - `artifacts/live_scheduler_pressure/summary.json`: live scheduler-path pressure
   trace with protected resident headroom affecting active request handling.
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/aggregate.json`:
-  canonical aggregate for the repeated local patched connector
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.json`:
+  canonical aggregate for the repeated local patched connector scheduler-boundary
   failure-semantics run.
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/normalized_summaries.jsonl`:
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/normalized_summaries.jsonl`:
   one normalized row per generated repetition.
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/*/rep-001/`:
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/*/rep-001/`:
   representative raw traces retained for each scenario.
 - `artifacts/prior_art/prior_art_boundary.md`: semantic comparison against
   adjacent runtime primitives.

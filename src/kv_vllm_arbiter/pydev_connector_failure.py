@@ -113,6 +113,27 @@ def evaluate_pydev_connector_events(
         success=False,
         after=load_created,
     )
+    scheduler_restoration_failed = _first_event_after(
+        claim_events,
+        "scheduler_resident_claim_restoration_failed",
+        failed_transfer,
+        predicate=lambda event: event.get("outcome_claim_id") == claim_id
+        and bool(event.get("scheduler_side_failure_outcome")),
+    )
+    scheduler_refusal = _first_event_after(
+        claim_events,
+        "scheduler_active_request_refused",
+        scheduler_restoration_failed,
+        predicate=lambda event: event.get("outcome_claim_id") == claim_id
+        and claim_id in event.get("blocking_claim_ids", [])
+        and bool(event.get("scheduler_side_refusal"))
+        and not bool(event.get("native_scheduler_admission_refusal")),
+    )
+    scheduler_last_event = scheduler_refusal or scheduler_restoration_failed
+    request_termination = _first_request_termination_after(
+        claim_events,
+        scheduler_last_event,
+    )
     load_failed = _first_event_after(
         claim_events,
         "offload_load_job_failed",
@@ -148,7 +169,29 @@ def evaluate_pydev_connector_events(
     fallback_satisfied_after_failure = _first_event_after(
         claim_events,
         "resident_claim_restored",
-        restoration_failed,
+        scheduler_restoration_failed or restoration_failed,
+    )
+    fallback_recompute_observed_after_failure = (
+        fallback_satisfied_after_failure is not None
+    )
+    connector_level_outcome_present = restoration_failed is not None and refusal is not None
+    scheduler_side_failure_outcome_present = scheduler_restoration_failed is not None
+    scheduler_side_refusal_present = scheduler_refusal is not None
+    scheduler_side_claim_match = (
+        scheduler_restoration_failed is not None
+        and scheduler_restoration_failed.get("outcome_claim_id") == claim_id
+        and scheduler_refusal is not None
+        and scheduler_refusal.get("outcome_claim_id") == claim_id
+        and claim_id in scheduler_refusal.get("blocking_claim_ids", [])
+    )
+    scheduler_event_before_or_at_termination = _event_before_or_at(
+        scheduler_refusal,
+        request_termination,
+    )
+    native_scheduler_admission_refusal = any(
+        bool(event.get("native_scheduler_admission_refusal"))
+        for event in (scheduler_restoration_failed, scheduler_refusal)
+        if event is not None
     )
 
     observation_missing = []
@@ -178,8 +221,18 @@ def evaluate_pydev_connector_events(
         failure_missing.append("claim_scoped_restoration_failed")
     if refusal is None:
         failure_missing.append("fail_closed_active_request_refused")
-    if fallback_satisfied_after_failure is not None:
-        failure_missing.append("fallback_recompute_counted_as_satisfaction")
+    if not scheduler_side_failure_outcome_present:
+        failure_missing.append("scheduler_side_restoration_failed")
+    if not scheduler_side_refusal_present:
+        failure_missing.append("scheduler_side_active_request_refused")
+    if not scheduler_side_claim_match:
+        failure_missing.append("scheduler_side_claim_match")
+    if not scheduler_event_before_or_at_termination:
+        failure_missing.append("scheduler_event_before_or_at_termination")
+    if native_scheduler_admission_refusal:
+        failure_missing.append("native_scheduler_admission_refusal_misclassified")
+    if fallback_recompute_observed_after_failure:
+        failure_missing.append("no_fallback_recompute_counted_as_satisfaction")
 
     ordered_failure = _ordered(
         request_initialized,
@@ -189,6 +242,9 @@ def evaluate_pydev_connector_events(
         restore_required,
         load_created,
         failed_transfer,
+        scheduler_restoration_failed,
+        scheduler_refusal,
+        request_termination,
         load_failed,
         restoration_failed,
         refusal,
@@ -206,10 +262,42 @@ def evaluate_pydev_connector_events(
             "wrong_claim_failure_rejected": wrong_claim_rejected,
             "unclaimed_failure_rejected": unclaimed_failure and restoration_failed is None,
             "fallback_recompute_rejected": fallback_recompute_rejected,
-            "fallback_recompute_counted_as_satisfaction": (
-                fallback_satisfied_after_failure is not None
+            "fallback_recompute_observed_after_failure": (
+                fallback_recompute_observed_after_failure
+            ),
+            "fallback_recompute_counted_as_satisfaction": False,
+            "ordinary_offload_without_claim_rejected": (
+                claim_id is None and _has_connector_activity(event_list)
             ),
         },
+        "connector_level_outcome_present": connector_level_outcome_present,
+        "scheduler_side_failure_outcome_present": (
+            scheduler_side_failure_outcome_present
+        ),
+        "scheduler_side_refusal_present": scheduler_side_refusal_present,
+        "scheduler_side_claim_match": scheduler_side_claim_match,
+        "scheduler_event_before_or_at_termination": (
+            scheduler_event_before_or_at_termination
+        ),
+        "native_scheduler_admission_refusal": native_scheduler_admission_refusal,
+        "finish_status": _first_nonempty_field(
+            scheduler_refusal,
+            scheduler_restoration_failed,
+            refusal,
+            key="finish_status",
+        ),
+        "finish_reason": _first_nonempty_field(
+            scheduler_refusal,
+            scheduler_restoration_failed,
+            refusal,
+            key="finish_reason",
+        ),
+        "blocking_claim_ids": _first_nonempty_field(
+            scheduler_refusal,
+            refusal,
+            key="blocking_claim_ids",
+        )
+        or [],
         "ordered_evidence": {
             "request_initialized": _compact(request_initialized),
             "store_created": _compact(store_created),
@@ -222,13 +310,18 @@ def evaluate_pydev_connector_events(
             "load_completed": _compact(load_completed),
             "restored": _compact(restored),
             "failed_transfer": _compact(failed_transfer),
+            "scheduler_restoration_failed": _compact(scheduler_restoration_failed),
+            "scheduler_refusal": _compact(scheduler_refusal),
+            "request_termination": _compact(request_termination),
             "load_failed": _compact(load_failed),
             "restoration_failed": _compact(restoration_failed),
             "refusal": _compact(refusal),
         },
         "claim_boundary": (
-            "Patched pydev vLLM OffloadingConnector evidence only; this is not "
-            "native upstream ResidentClaim support or production offload performance."
+            "Patched pydev vLLM OffloadingConnector plus scheduler-side "
+            "invalid-KV-load boundary evidence only; this is not native upstream "
+            "ResidentClaim support, production offload performance, or "
+            "pre-admission refusal."
         ),
     }
     analyzer_runtime_ns = time.perf_counter_ns() - start
@@ -300,6 +393,26 @@ def _first_event_after(
     return None
 
 
+def _first_request_termination_after(
+    events: list[Event],
+    after: Event | None,
+) -> Event | None:
+    pending = _first_event_after(
+        events,
+        "offload_request_finished_pending_jobs",
+        after,
+    )
+    no_pending = _first_event_after(
+        events,
+        "offload_request_finished_no_pending_jobs",
+        after,
+    )
+    candidates = [event for event in (pending, no_pending) if event is not None]
+    if not candidates:
+        return None
+    return min(candidates, key=_event_order)
+
+
 def _first_transfer(
     events: list[Event],
     transfer_type: tuple[str, str],
@@ -330,8 +443,32 @@ def _ordered(*events: Event | None) -> bool:
     )
 
 
+def _event_before_or_at(left: Event | None, right: Event | None) -> bool:
+    if left is None or right is None:
+        return False
+    return _event_order(left) <= _event_order(right)
+
+
 def _event_order(event: Event) -> int:
     return int(event.get("event_sequence", event.get("timestamp_ns", 0)))
+
+
+def _first_nonempty_field(*events: Event | None, key: str) -> Any | None:
+    for event in events:
+        if event is None:
+            continue
+        value = event.get(key)
+        if value is not None:
+            return value
+    return None
+
+
+def _has_connector_activity(events: list[Event]) -> bool:
+    return any(
+        str(event.get("event", "")).startswith("offload_")
+        or str(event.get("event", "")).startswith("resident_claim_")
+        for event in events
+    )
 
 
 def _compact(event: Event | None) -> dict[str, Any] | None:
@@ -352,5 +489,14 @@ def _compact(event: Event | None) -> dict[str, Any] | None:
         "outcome_claim_id",
         "blocking_claim_ids",
         "scheduler_finish_status",
+        "finish_status",
+        "finish_reason",
+        "invalid_block_ids",
+        "invalid_block_count",
+        "scheduler_failure_policy",
+        "scheduler_side_failure_outcome",
+        "scheduler_side_refusal",
+        "native_scheduler_refusal",
+        "native_scheduler_admission_refusal",
     )
     return {key: event[key] for key in keys if key in event}

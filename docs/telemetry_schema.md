@@ -60,6 +60,8 @@ tuple:
 | `resident_claim_restored` | Claimed state was restored from the offload tier before predicate-satisfying reuse. |
 | `resident_claim_reuse_after_restore` | Reuse satisfied the materialization predicate after ordered restoration. |
 | `resident_claim_restoration_failed` | Controlled restoration-unavailable/failure path fired for a claim. |
+| `scheduler_resident_claim_restoration_failed` | Scheduler observed the invalid-KV-load failure branch for a claimed request before or at termination. |
+| `scheduler_active_request_refused` | Scheduler-side fail-closed outcome for a claimed request at the invalid-KV-load handling boundary; not pre-admission refusal unless explicitly marked. |
 | `active_live_bounded` | Active live KV was bounded by recompute, offload, or another mechanism. |
 
 ## Block Event Fields

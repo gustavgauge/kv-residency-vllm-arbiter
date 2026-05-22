@@ -14,5 +14,5 @@ Failure missing: `-`
 
 | Role | Status | Latency s | Cached tokens | Output tokens | Exception |
 |---|---|---:|---:|---:|---|
-| resident | served | 0.173458 | 0 | 8 | - |
-| reuse | controlled_refused | 0.002867 | 0 | 0 | - |
+| resident | served | 0.208525 | 0 | 8 | - |
+| reuse | controlled_refused | 0.003434 | 0 | 0 | - |

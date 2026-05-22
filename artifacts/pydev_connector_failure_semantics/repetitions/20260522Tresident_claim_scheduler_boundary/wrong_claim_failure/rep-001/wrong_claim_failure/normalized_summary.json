@@ -1,0 +1,396 @@
+{
+  "analyzer_runtime_ns": 78600,
+  "artifact_commit": "0b3cfdc27cb7750c1f4e3676488be543d431ee17",
+  "blocking_claim_ids": [],
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector plus scheduler-side invalid-KV-load boundary mechanism only; not upstream ResidentClaim support, not production offload performance, and not pre-admission refusal.",
+  "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
+  "connector_level_outcome_present": false,
+  "event_bytes": 18570,
+  "event_count": 17,
+  "event_sequence_valid": true,
+  "failure_outcome_gate_result": false,
+  "failure_to_outcome_latency_ns": null,
+  "final_request_outcome_label": "served",
+  "finish_reason": null,
+  "finish_status": null,
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "native_scheduler_admission_refusal": false,
+  "obligations_missing": [
+    "failure:claim_scoped_restoration_failed",
+    "failure:controlled_cpu_to_gpu_load_failure",
+    "failure:fail_closed_active_request_refused",
+    "failure:scheduler_event_before_or_at_termination",
+    "failure:scheduler_side_active_request_refused",
+    "failure:scheduler_side_claim_match",
+    "failure:scheduler_side_restoration_failed"
+  ],
+  "obligations_satisfied": [
+    "failure:claim_metadata_before_lifecycle",
+    "failure:no_fallback_recompute_counted_as_satisfaction",
+    "failure:ordered_failure_semantics",
+    "failure:restore_required_before_failure",
+    "failure:store_offload_to_cpu_path",
+    "observation:claim_metadata_before_lifecycle",
+    "observation:claim_metadata_ordering",
+    "observation:cpu_to_gpu_restore_success",
+    "observation:reuse_lookup_hit_requiring_load",
+    "observation:store_offload_to_cpu_path"
+  ],
+  "observation_gate_result": true,
+  "ordered_event_sequence": [
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "request_initialized",
+      "event_sequence": 0,
+      "monotonic_ns": 113998841929947,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_lookup_result",
+      "event_sequence": 1,
+      "monotonic_ns": 113998842164306,
+      "num_hit_tokens": 0,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "will_load_async": false
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_store_job_created",
+      "event_sequence": 2,
+      "job_id": 0,
+      "key_count": 7,
+      "monotonic_ns": 113998842424305,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_worker_transfer_submitted",
+      "event_sequence": 3,
+      "job_id": 0,
+      "key_count": 7,
+      "monotonic_ns": 113998881962676,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_worker_transfer_finished",
+      "event_sequence": 4,
+      "job_id": 0,
+      "key_count": 7,
+      "monotonic_ns": 113998944282471,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "success": true,
+      "transfer_size": 10321920,
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "resident_claim_offloaded",
+      "event_sequence": 5,
+      "job_id": 0,
+      "key_count": 7,
+      "monotonic_ns": 113998956162912,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "GPU",
+        "CPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_job_completed",
+      "event_sequence": 6,
+      "job_id": 0,
+      "key_count": 7,
+      "monotonic_ns": 113998956249941,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_request_finished_no_pending_jobs",
+      "event_sequence": 7,
+      "monotonic_ns": 113999010276197,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "0-9e9b0779",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "request_initialized",
+      "event_sequence": 8,
+      "monotonic_ns": 113999012083292,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_lookup_result",
+      "event_sequence": 9,
+      "monotonic_ns": 113999012214222,
+      "num_hit_tokens": 448,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "will_load_async": true
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "resident_claim_restore_required",
+      "event_sequence": 10,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999012348331,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "CPU",
+        "GPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_load_job_created",
+      "event_sequence": 11,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999012423521,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "CPU",
+        "GPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_worker_transfer_submitted",
+      "event_sequence": 12,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999012686450,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "CPU",
+        "GPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_worker_transfer_finished",
+      "event_sequence": 13,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999013279129,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "success": true,
+      "transfer_size": 10321920,
+      "transfer_type": [
+        "CPU",
+        "GPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "resident_claim_restored",
+      "event_sequence": 14,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999013491728,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f",
+      "transfer_type": [
+        "CPU",
+        "GPU"
+      ]
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_job_completed",
+      "event_sequence": 15,
+      "job_id": 1,
+      "key_count": 7,
+      "monotonic_ns": 113999013574198,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    },
+    {
+      "cache_identity": "vllm-live-request-path-cache:v1",
+      "claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "event": "offload_request_finished_no_pending_jobs",
+      "event_sequence": 16,
+      "monotonic_ns": 113999101919228,
+      "predicate_id": "predicate:live-leading-prefix",
+      "prefix_id": "prefix:shared:a977eb91cfd2a19f",
+      "request_id": "1-b7b1fd02",
+      "request_token_map_id": "token-map:shared-prefix:a977eb91cfd2a19f",
+      "resident_claim_id": "pydev-connector-failure:wrong_claim_failure:rep-001:claim:live-request-path",
+      "reusable_object_id": "vllm-request-prefix:a977eb91cfd2a19f"
+    }
+  ],
+  "output_tokens": 16,
+  "parent_commit": "fd74e6d4cbfd067dc5e13541c4f9dfedfe157713",
+  "predicate_id": "predicate:live-leading-prefix",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "raw_event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/wrong_claim_failure/rep-001/wrong_claim_failure/vllm_runtime_events.jsonl",
+  "raw_summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/wrong_claim_failure/rep-001/wrong_claim_failure/summary.json",
+  "repetition_id": "rep-001",
+  "resident_request_wall_time_s": 0.178467,
+  "restoration_failed_to_active_request_refused_latency_ns": null,
+  "reuse_cached_tokens": 448,
+  "reuse_request_wall_time_s": 0.090986,
+  "run_id": "pydev-connector-failure:wrong_claim_failure:rep-001",
+  "run_set_id": "20260522Tresident_claim_scheduler_boundary",
+  "runner_path": "/home/krooksn/ai/bin/vllm-pydev-python",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "scenario_id": "wrong_claim_failure",
+  "scheduler_event_before_or_at_termination": false,
+  "scheduler_side_claim_match": false,
+  "scheduler_side_failure_outcome_present": false,
+  "scheduler_side_refusal_present": false,
+  "schema_version": 1,
+  "transfer_bytes": [
+    10321920,
+    10321920
+  ],
+  "transfer_bytes_total": 20643840,
+  "transfer_directions": [
+    [
+      "GPU",
+      "CPU"
+    ],
+    [
+      "CPU",
+      "GPU"
+    ]
+  ],
+  "vllm_base_commit": "9b9d5dbaab852a1c615fe83a7f92881d353503db",
+  "vllm_patch_commits": [
+    {
+      "commit": "8d36813872db685823242be68bc907b5c6faade2",
+      "subject": "Add ResidentClaim connector telemetry probe"
+    },
+    {
+      "commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+      "subject": "Add ResidentClaim load failure semantics probe"
+    }
+  ],
+  "worker_transfer_count": 2
+}

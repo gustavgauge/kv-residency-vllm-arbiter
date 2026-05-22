@@ -1,0 +1,96 @@
+{
+  "analyzer_runtime_ns": 24350,
+  "artifact_commit": "0b3cfdc27cb7750c1f4e3676488be543d431ee17",
+  "blocking_claim_ids": [],
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector plus scheduler-side invalid-KV-load boundary mechanism only; not upstream ResidentClaim support, not production offload performance, and not pre-admission refusal.",
+  "claim_id": null,
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
+  "connector_level_outcome_present": false,
+  "event_bytes": 0,
+  "event_count": 0,
+  "event_sequence_valid": true,
+  "failure_outcome_gate_result": false,
+  "failure_to_outcome_latency_ns": null,
+  "final_request_outcome_label": "served",
+  "finish_reason": null,
+  "finish_status": null,
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "native_scheduler_admission_refusal": false,
+  "obligations_missing": [
+    "failure:claim_metadata_before_lifecycle",
+    "failure:claim_scoped_restoration_failed",
+    "failure:controlled_cpu_to_gpu_load_failure",
+    "failure:fail_closed_active_request_refused",
+    "failure:restore_required_before_failure",
+    "failure:scheduler_event_before_or_at_termination",
+    "failure:scheduler_side_active_request_refused",
+    "failure:scheduler_side_claim_match",
+    "failure:scheduler_side_restoration_failed",
+    "failure:store_offload_to_cpu_path",
+    "observation:claim_metadata_before_lifecycle",
+    "observation:cpu_to_gpu_restore_success",
+    "observation:reuse_lookup_hit_requiring_load",
+    "observation:store_offload_to_cpu_path"
+  ],
+  "obligations_satisfied": [
+    "failure:no_fallback_recompute_counted_as_satisfaction",
+    "failure:ordered_failure_semantics",
+    "observation:claim_metadata_ordering"
+  ],
+  "observation_gate_result": false,
+  "ordered_event_sequence": [],
+  "output_tokens": 16,
+  "parent_commit": "fd74e6d4cbfd067dc5e13541c4f9dfedfe157713",
+  "predicate_id": null,
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "raw_event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/success_no_event_path/rep-001/success_no_event_path/vllm_runtime_events.jsonl",
+  "raw_summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/success_no_event_path/rep-001/success_no_event_path/summary.json",
+  "repetition_id": "rep-001",
+  "resident_request_wall_time_s": 0.201205,
+  "restoration_failed_to_active_request_refused_latency_ns": null,
+  "reuse_cached_tokens": 448,
+  "reuse_request_wall_time_s": 0.10241,
+  "run_id": "pydev-connector-failure:success_no_event_path:rep-001",
+  "run_set_id": "20260522Tresident_claim_scheduler_boundary",
+  "runner_path": "/home/krooksn/ai/bin/vllm-pydev-python",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "scenario_id": "success_no_event_path",
+  "scheduler_event_before_or_at_termination": false,
+  "scheduler_side_claim_match": false,
+  "scheduler_side_failure_outcome_present": false,
+  "scheduler_side_refusal_present": false,
+  "schema_version": 1,
+  "transfer_bytes": [],
+  "transfer_bytes_total": 0,
+  "transfer_directions": [],
+  "vllm_base_commit": "9b9d5dbaab852a1c615fe83a7f92881d353503db",
+  "vllm_patch_commits": [
+    {
+      "commit": "8d36813872db685823242be68bc907b5c6faade2",
+      "subject": "Add ResidentClaim connector telemetry probe"
+    },
+    {
+      "commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+      "subject": "Add ResidentClaim load failure semantics probe"
+    }
+  ],
+  "worker_transfer_count": 0
+}

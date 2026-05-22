@@ -1,0 +1,162 @@
+{
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector mechanism only; not upstream ResidentClaim support and not production offload performance.",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
+  "disable_log_stats_required": true,
+  "evaluation": {
+    "analyzer_runtime_ns": 40810,
+    "connector_observation_success": false,
+    "event_counts": {
+      "offload_job_completed": 2,
+      "offload_load_job_created": 1,
+      "offload_lookup_result": 2,
+      "offload_request_finished_no_pending_jobs": 2,
+      "offload_store_job_created": 1,
+      "offload_worker_transfer_finished": 2,
+      "offload_worker_transfer_submitted": 2,
+      "request_initialized": 2
+    },
+    "gate_summary": {
+      "blocking_claim_ids": [],
+      "claim_boundary": "Patched pydev vLLM OffloadingConnector evidence only; this is not native upstream ResidentClaim support or production offload performance.",
+      "claim_id": null,
+      "connector_level_outcome_present": false,
+      "controls": {
+        "fallback_recompute_counted_as_satisfaction": false,
+        "fallback_recompute_rejected": false,
+        "generic_counter_only_rejected": true,
+        "ordinary_offload_without_claim_rejected": true,
+        "unclaimed_failure_rejected": false,
+        "wrong_claim_failure_rejected": true
+      },
+      "failure_missing_requirements": [
+        "claim_metadata_before_lifecycle",
+        "claim_scoped_restoration_failed",
+        "controlled_cpu_to_gpu_load_failure",
+        "fail_closed_active_request_refused",
+        "restore_required_before_failure",
+        "scheduler_event_before_or_at_termination",
+        "scheduler_side_active_request_refused",
+        "scheduler_side_claim_match",
+        "scheduler_side_restoration_failed",
+        "store_offload_to_cpu_path"
+      ],
+      "finish_reason": null,
+      "finish_status": null,
+      "native_scheduler_admission_refusal": false,
+      "observation_missing_requirements": [
+        "claim_metadata_before_lifecycle",
+        "cpu_to_gpu_restore_success",
+        "reuse_lookup_hit_requiring_load",
+        "store_offload_to_cpu_path"
+      ],
+      "ordered_evidence": {
+        "failed_transfer": null,
+        "load_completed": null,
+        "load_created": null,
+        "load_failed": null,
+        "load_transfer_success": null,
+        "lookup_hit": null,
+        "refusal": null,
+        "request_initialized": null,
+        "request_termination": null,
+        "restoration_failed": null,
+        "restore_required": null,
+        "restored": null,
+        "scheduler_refusal": null,
+        "scheduler_restoration_failed": null,
+        "store_completed": null,
+        "store_created": null,
+        "store_transfer": null
+      },
+      "scheduler_event_before_or_at_termination": false,
+      "scheduler_side_claim_match": false,
+      "scheduler_side_failure_outcome_present": false,
+      "scheduler_side_refusal_present": false,
+      "schema_version": 1
+    },
+    "restoration_failure_outcome_success": false
+  },
+  "event_bytes": 4603,
+  "event_count": 14,
+  "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/ordinary_offload_no_claim/vllm_runtime_events.jsonl",
+  "generated_at": "2026-05-22T20:22:26.476162+00:00",
+  "load_failure_to_outcome_latency_ns": null,
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "request_records": [
+    {
+      "exception": null,
+      "num_cached_tokens": 0,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 480,
+      "request_id": "0",
+      "role": "resident",
+      "status": "served",
+      "ttft_s": null,
+      "wall_latency_s": 0.175754
+    },
+    {
+      "exception": null,
+      "num_cached_tokens": 448,
+      "num_output_tokens": 8,
+      "num_prompt_tokens": 481,
+      "request_id": "1",
+      "role": "reuse",
+      "status": "served",
+      "ttft_s": null,
+      "wall_latency_s": 0.089109
+    }
+  ],
+  "run_id": "pydev-connector-failure:ordinary_offload_no_claim",
+  "runtime": {
+    "cuda_available": true,
+    "device0": "NVIDIA GeForce RTX 3090",
+    "device_count": 1,
+    "torch_cuda": "13.0",
+    "torch_version": "2.11.0+cu130",
+    "vllm_file": "/home/krooksn/ai/runtimes/vllm/repo/vllm/__init__.py",
+    "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
+  },
+  "scenario": "ordinary_offload_no_claim",
+  "scenario_config": {
+    "allow_unclaimed_failure": false,
+    "claim_params": false,
+    "event_path": true,
+    "failure_target": null,
+    "inject_failure": false,
+    "kv_load_failure_policy": "fail",
+    "synthetic_generic": false
+  },
+  "status": "ok",
+  "transfer_metrics": {
+    "directions": [
+      [
+        "GPU",
+        "CPU"
+      ],
+      [
+        "CPU",
+        "GPU"
+      ]
+    ],
+    "worker_transfer_count": 2,
+    "worker_transfer_sizes": [
+      10321920,
+      10321920
+    ],
+    "worker_transfer_times_s": [
+      0.0007003200054168701,
+      0.0005654079914093017
+    ]
+  },
+  "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."
+}

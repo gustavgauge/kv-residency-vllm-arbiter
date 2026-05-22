@@ -29,6 +29,10 @@ FAILURE_REQUIREMENTS = (
     "controlled_cpu_to_gpu_load_failure",
     "claim_scoped_restoration_failed",
     "fail_closed_active_request_refused",
+    "scheduler_side_restoration_failed",
+    "scheduler_side_active_request_refused",
+    "scheduler_side_claim_match",
+    "scheduler_event_before_or_at_termination",
     "ordered_failure_semantics",
     "no_fallback_recompute_counted_as_satisfaction",
 )
@@ -57,6 +61,15 @@ COMPACT_EVENT_KEYS = (
     "blocking_claim_ids",
     "claim_scoped_outcome_type",
     "scheduler_finish_status",
+    "finish_status",
+    "finish_reason",
+    "invalid_block_ids",
+    "invalid_block_count",
+    "scheduler_failure_policy",
+    "scheduler_side_failure_outcome",
+    "scheduler_side_refusal",
+    "native_scheduler_refusal",
+    "native_scheduler_admission_refusal",
 )
 
 
@@ -188,6 +201,27 @@ def normalize_summary(
         "failure_outcome_gate_result": bool(
             raw.get("evaluation", {}).get("restoration_failure_outcome_success")
         ),
+        "scheduler_side_failure_outcome_present": bool(
+            gate_summary.get("scheduler_side_failure_outcome_present")
+        ),
+        "scheduler_side_refusal_present": bool(
+            gate_summary.get("scheduler_side_refusal_present")
+        ),
+        "scheduler_side_claim_match": bool(
+            gate_summary.get("scheduler_side_claim_match")
+        ),
+        "scheduler_event_before_or_at_termination": bool(
+            gate_summary.get("scheduler_event_before_or_at_termination")
+        ),
+        "native_scheduler_admission_refusal": bool(
+            gate_summary.get("native_scheduler_admission_refusal")
+        ),
+        "connector_level_outcome_present": bool(
+            gate_summary.get("connector_level_outcome_present")
+        ),
+        "finish_status": gate_summary.get("finish_status"),
+        "finish_reason": gate_summary.get("finish_reason"),
+        "blocking_claim_ids": gate_summary.get("blocking_claim_ids") or [],
         "event_sequence_valid": _expected_event_sequence_valid(raw),
         "resident_request_wall_time_s": _record_number(resident_record, "wall_latency_s"),
         "reuse_request_wall_time_s": _record_number(reuse_record, "wall_latency_s"),
@@ -218,8 +252,10 @@ def normalize_summary(
         "claim_boundary": raw.get("claim_boundary")
         or gate_summary.get("claim_boundary")
         or (
-            "Local patched pydev vLLM OffloadingConnector mechanism only; "
-            "not upstream ResidentClaim support and not production offload performance."
+            "Local patched pydev vLLM OffloadingConnector plus scheduler-side "
+            "invalid-KV-load boundary mechanism only; not upstream ResidentClaim "
+            "support, not production offload performance, and not pre-admission "
+            "refusal."
         ),
     }
     return normalized
@@ -286,7 +322,7 @@ def render_aggregate_markdown(aggregate: dict[str, Any]) -> str:
     lines = [
         "# Pydev Connector Failure-Semantics Repetition Summary",
         "",
-        "Scope: local patched pydev vLLM OffloadingConnector mechanism only; not upstream vLLM support, production offload performance, or scheduler-native admission/refusal.",
+        "Scope: local patched pydev vLLM OffloadingConnector mechanism with scheduler-side invalid-KV-load boundary evidence; not upstream vLLM support, production offload performance, or scheduler-native pre-admission refusal.",
         "",
         "| Scenario | Runs | Observation pass | Failure-outcome pass | Event-sequence valid | Resident median/p95 s | Reuse median/p95 s | Event bytes median/p95 | Analyzer median/p95 ns | Failure->outcome median/p95 ns | Restore-failed->refused median/p95 ns | Outcomes |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
@@ -438,6 +474,13 @@ def _expected_event_sequence_valid(raw: dict[str, Any]) -> bool:
     if scenario == "generic_counter_only":
         return not observation and not failure and bool(
             controls.get("generic_counter_only_rejected")
+        )
+    if scenario == "ordinary_offload_no_claim":
+        return (
+            event_count > 0
+            and not observation
+            and not failure
+            and bool(controls.get("ordinary_offload_without_claim_rejected"))
         )
     return False
 

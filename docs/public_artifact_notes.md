@@ -3,13 +3,16 @@
 This branch is public evidence for the ResidentClaim lifecycle/outcome
 mechanism. It records a local patched vLLM connector mechanism and accompanying
 analysis harnesses for checking claim-scoped offload, restore-before-reuse,
-controlled restoration failure, and explicit active-request outcome events.
+controlled restoration failure, scheduler-side invalid-KV-load boundary
+outcomes, and explicit active-request outcome events.
 
 This is not upstream or native vLLM ResidentClaim support. It is not a
 production support statement, a performance benchmark, or a claim that vLLM
 ships the ResidentClaim contract. The calibrated claim is narrower: a local
 patched `OffloadingConnector` path can carry the lifecycle/outcome evidence
-needed by the ResidentClaim contract under controlled failure injection.
+needed by the ResidentClaim contract under controlled failure injection. The
+strongest checked-in run adds scheduler-side failure/refusal telemetry at the
+invalid-KV-load handling boundary; it is still not pre-admission refusal.
 
 ## Historical Provenance Fields
 
@@ -28,11 +31,10 @@ export VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout
 export VLLM_KV_RESIDENCY_MODEL=HuggingFaceTB/SmolLM2-135M-Instruct
 ```
 
-The historical repeated run set keeps its generated run-set id,
+The historical connector-level repeated run set keeps its generated run-set id,
 `20260522Tpaper2_connector_failure_repetitions`, because changing it would
-rewrite provenance. The internal tag in that id is not part of the public
-claim. New public reruns should use a neutral id such as
-`20260522Tresident_claim_connector_failure_repetitions`.
+rewrite provenance. The canonical scheduler-boundary repeated run set is
+`20260522Tresident_claim_scheduler_boundary`.
 
 ## Public Evidence Footprint
 
@@ -41,10 +43,10 @@ representative raw repetition per scenario. Full raw repetitions can be
 regenerated locally with the repetition harness. The retained aggregate files
 are:
 
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/aggregate.json`
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/aggregate.md`
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/normalized_summaries.jsonl`
-- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/manifest.json`
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.json`
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.md`
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/normalized_summaries.jsonl`
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/manifest.json`
 
 Representative raw traces are retained under each scenario's `rep-001`
 directory. Extra raw repetition directories and `run.log` files are omitted from

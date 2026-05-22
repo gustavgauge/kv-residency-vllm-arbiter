@@ -173,23 +173,29 @@ The passing failure scenario is `claimed_load_failure`. It first stores resident
 KV through a `GPU -> CPU` worker transfer, resets only the local prefix cache,
 observes a reuse lookup hit for 448 tokens, creates a load job, injects a
 controlled failure into that same claim's `CPU -> GPU` worker transfer, and then
-emits:
+emits scheduler-side boundary events before the request-finished hook, followed
+by the existing connector-level outcome:
 
 | Ordered event | Required boundary |
 |---|---|
 | `resident_claim_restore_required` | Same claim id, request id, predicate, prefix/reusable object, cache identity, token-map identity, job id, transfer type, and synthesized restoration generation. |
 | `offload_worker_transfer_finished` | `CPU -> GPU`, `success=false`, controlled failure reason, and same claim/job. |
-| `offload_load_job_failed` | Same claim/job and load direction. |
-| `resident_claim_restoration_failed` | `outcome_claim_id` equals the accepted claim id. |
-| `active_request_refused` | `blocking_claim_ids` contains that claim id. |
+| `scheduler_resident_claim_restoration_failed` | Scheduler observed the invalid-KV-load branch, same claim id, request id, invalid block ids/count, failure policy, and `finish_status=FINISHED_ERROR`. |
+| `scheduler_active_request_refused` | Same claim id in `blocking_claim_ids`, `scheduler_side_refusal=true`, and `native_scheduler_admission_refusal=false`. |
+| `offload_request_finished_pending_jobs` | Request termination boundary; scheduler-side events must occur before or at this boundary. |
+| `offload_load_job_failed` | Existing connector failed-load propagation with same claim/job and load direction. |
+| `resident_claim_restoration_failed` | Existing connector-level `outcome_claim_id` equals the accepted claim id. |
+| `active_request_refused` | Existing connector-level `blocking_claim_ids` contains that claim id. |
 
-The refusal is a controlled patched connector outcome after vLLM's existing
-`kv_load_failure_policy="fail"` marks the active request `FINISHED_ERROR`. It is
-not native scheduler admission refusal. The result supports only this claim:
+The strengthened refusal is a controlled patched scheduler-boundary outcome at
+vLLM's existing invalid-KV-load handling branch. It is not native/upstream vLLM
+support and not pre-admission refusal: restoration failure is discovered during
+CPU-to-GPU restoration. The result supports only this claim:
 
 ```text
-local patched vLLM connector mechanism satisfies the offload lifecycle/outcome
-gate under controlled failure injection.
+local patched vLLM connector mechanism, with scheduler-side invalid-KV-load
+boundary telemetry, satisfies the offload lifecycle/outcome gate under
+controlled failure injection.
 ```
 
 The controls intentionally fail the outcome gate:
@@ -199,20 +205,19 @@ The controls intentionally fail the outcome gate:
 | `success_path` | Passes connector observation, fails failure outcome because restore succeeds. |
 | `wrong_claim_failure` | Fails failure outcome because the injected claim id does not match the accepted claim. |
 | `unclaimed_load_failure` | Fails failure outcome and emits no claim-scoped ResidentClaim refusal. |
+| `ordinary_offload_no_claim` | Performs ordinary connector store/load activity but fails observation and failure gates because no ResidentClaim metadata is present. |
 | `generic_counter_only` | Fails because generic counters lack claim, predicate, cache, token-map, and outcome identity. |
 | `fallback_recompute` | Fails because request service after a failed load is not counted as satisfying the accepted claim without prior refusal/demotion/expiry/harm. |
 
-The checked-in repeated run is
-`artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/`.
-That run-set id is a historical artifact identifier and is preserved in the
-generated evidence files; the internal tag in the id is not part of the public
-claim. New public reruns should use a neutral run-set id, for example:
+The checked-in repeated scheduler-boundary run is
+`artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/`.
+New public reruns should use similarly neutral run-set ids, for example:
 
 ```bash
 export VLLM_AUDIT_PYTHON=/path/to/python-with-patched-vllm
 export VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout
 python3 scripts/run_pydev_connector_failure_repetitions.py \
-  --run-set-id 20260522Tresident_claim_connector_failure_repetitions
+  --run-set-id 20260522Tresident_claim_scheduler_boundary
 ```
 
 `scripts/normalize_pydev_connector_failure_semantics.py` and the repetition
@@ -224,8 +229,16 @@ aggregate rows in `aggregate.json`, `aggregate.md`, and
 |---|---:|---:|---:|---:|
 | `success_no_event_path` | 30 | 0/30 | 0/30 | 30/30 |
 | `success_path` | 30 | 30/30 | 0/30 | 30/30 |
+| `ordinary_offload_no_claim` | 10 | 0/10 | 0/10 | 10/10 |
 | `claimed_load_failure` | 30 | 0/30 | 30/30 | 30/30 |
 | `wrong_claim_failure` | 10 | 10/10 | 0/10 | 10/10 |
 | `unclaimed_load_failure` | 10 | 0/10 | 0/10 | 10/10 |
 | `fallback_recompute` | 10 | 10/10 | 0/10 | 10/10 |
 | `generic_counter_only` | 1 | 0/1 | 0/1 | 1/1 |
+
+For the 30 `claimed_load_failure` repetitions, all 30 normalized rows record
+`scheduler_side_failure_outcome_present=true`,
+`scheduler_side_refusal_present=true`, `scheduler_side_claim_match=true`,
+`scheduler_event_before_or_at_termination=true`,
+`connector_level_outcome_present=true`, and
+`native_scheduler_admission_refusal=false`.

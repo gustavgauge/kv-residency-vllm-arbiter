@@ -68,6 +68,11 @@ SCENARIOS = {
         claim_params=True,
         event_path=True,
     ),
+    "ordinary_offload_no_claim": Scenario(
+        name="ordinary_offload_no_claim",
+        claim_params=False,
+        event_path=True,
+    ),
     "claimed_load_failure": Scenario(
         name="claimed_load_failure",
         claim_params=True,
@@ -586,8 +591,10 @@ def main() -> int:
         "disable_log_stats_required": True,
         "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True.",
         "claim_boundary": (
-            "Local patched pydev vLLM OffloadingConnector mechanism only; "
-            "not upstream ResidentClaim support and not production offload performance."
+            "Local patched pydev vLLM OffloadingConnector plus scheduler-side "
+            "invalid-KV-load boundary mechanism only; not upstream ResidentClaim "
+            "support, not production offload performance, and not pre-admission "
+            "refusal."
         ),
     }
     write_json(scenario_dir / "summary.json", payload)

@@ -71,17 +71,48 @@ def failure_events() -> list[dict]:
             "failure_injection_flag": True,
         },
         {
-            "event": "offload_load_job_failed",
+            "event": "scheduler_resident_claim_restoration_failed",
             "event_sequence": 8,
             "monotonic_ns": 8_000,
+            "claim_id": CLAIM,
+            "outcome_claim_id": CLAIM,
+            "scheduler_side_failure_outcome": True,
+            "scheduler_side_refusal": True,
+            "native_scheduler_admission_refusal": False,
+            "finish_status": "FINISHED_ERROR",
+            "finish_reason": "error",
+            "blocking_claim_ids": [CLAIM],
+        },
+        {
+            "event": "scheduler_active_request_refused",
+            "event_sequence": 9,
+            "monotonic_ns": 9_000,
+            "claim_id": CLAIM,
+            "outcome_claim_id": CLAIM,
+            "blocking_claim_ids": [CLAIM],
+            "scheduler_side_refusal": True,
+            "native_scheduler_admission_refusal": False,
+            "finish_status": "FINISHED_ERROR",
+            "finish_reason": "error",
+        },
+        {
+            "event": "offload_request_finished_pending_jobs",
+            "event_sequence": 10,
+            "monotonic_ns": 10_000,
+            "claim_id": CLAIM,
+        },
+        {
+            "event": "offload_load_job_failed",
+            "event_sequence": 11,
+            "monotonic_ns": 11_000,
             "claim_id": CLAIM,
             "job_id": 1,
             "is_store": False,
         },
         {
             "event": "resident_claim_restoration_failed",
-            "event_sequence": 9,
-            "monotonic_ns": 9_000,
+            "event_sequence": 12,
+            "monotonic_ns": 12_000,
             "claim_id": CLAIM,
             "job_id": 1,
             "outcome_claim_id": CLAIM,
@@ -90,8 +121,8 @@ def failure_events() -> list[dict]:
         },
         {
             "event": "active_request_refused",
-            "event_sequence": 10,
-            "monotonic_ns": 10_000,
+            "event_sequence": 13,
+            "monotonic_ns": 13_000,
             "claim_id": CLAIM,
             "job_id": 1,
             "outcome_claim_id": CLAIM,
@@ -157,6 +188,15 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
     assert normalized["scenario_id"] == "claimed_load_failure"
     assert normalized["failure_outcome_gate_result"]
     assert normalized["event_sequence_valid"]
+    assert normalized["scheduler_side_failure_outcome_present"]
+    assert normalized["scheduler_side_refusal_present"]
+    assert normalized["scheduler_side_claim_match"]
+    assert normalized["scheduler_event_before_or_at_termination"]
+    assert not normalized["native_scheduler_admission_refusal"]
+    assert normalized["connector_level_outcome_present"]
+    assert normalized["finish_status"] == "FINISHED_ERROR"
+    assert normalized["finish_reason"] == "error"
+    assert normalized["blocking_claim_ids"] == [CLAIM]
     assert normalized["claim_id"] == CLAIM
     assert normalized["predicate_id"] == "predicate:test"
     assert normalized["transfer_bytes_total"] == 64

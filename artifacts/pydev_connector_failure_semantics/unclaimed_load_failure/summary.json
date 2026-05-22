@@ -1,8 +1,18 @@
 {
   "claim_boundary": "Local patched pydev vLLM OffloadingConnector mechanism only; not upstream ResidentClaim support and not production offload performance.",
+  "connector_config": {
+    "kv_connector": "OffloadingConnector",
+    "kv_connector_extra_config": {
+      "block_size": 64,
+      "cpu_bytes_to_use": 536870912,
+      "store_threshold": 1
+    },
+    "kv_load_failure_policy": "fail",
+    "kv_role": "kv_both"
+  },
   "disable_log_stats_required": true,
   "evaluation": {
-    "analyzer_runtime_ns": 39660,
+    "analyzer_runtime_ns": 45459,
     "connector_observation_success": false,
     "event_counts": {
       "offload_job_completed": 1,
@@ -18,12 +28,15 @@
       "request_initialized": 2
     },
     "gate_summary": {
+      "blocking_claim_ids": [],
       "claim_boundary": "Patched pydev vLLM OffloadingConnector evidence only; this is not native upstream ResidentClaim support or production offload performance.",
       "claim_id": null,
+      "connector_level_outcome_present": false,
       "controls": {
         "fallback_recompute_counted_as_satisfaction": false,
         "fallback_recompute_rejected": false,
         "generic_counter_only_rejected": true,
+        "ordinary_offload_without_claim_rejected": true,
         "unclaimed_failure_rejected": true,
         "wrong_claim_failure_rejected": true
       },
@@ -33,8 +46,15 @@
         "controlled_cpu_to_gpu_load_failure",
         "fail_closed_active_request_refused",
         "restore_required_before_failure",
+        "scheduler_event_before_or_at_termination",
+        "scheduler_side_active_request_refused",
+        "scheduler_side_claim_match",
+        "scheduler_side_restoration_failed",
         "store_offload_to_cpu_path"
       ],
+      "finish_reason": null,
+      "finish_status": null,
+      "native_scheduler_admission_refusal": false,
       "observation_missing_requirements": [
         "claim_metadata_before_lifecycle",
         "cpu_to_gpu_restore_success",
@@ -50,21 +70,28 @@
         "lookup_hit": null,
         "refusal": null,
         "request_initialized": null,
+        "request_termination": null,
         "restoration_failed": null,
         "restore_required": null,
         "restored": null,
+        "scheduler_refusal": null,
+        "scheduler_restoration_failed": null,
         "store_completed": null,
         "store_created": null,
         "store_transfer": null
       },
+      "scheduler_event_before_or_at_termination": false,
+      "scheduler_side_claim_match": false,
+      "scheduler_side_failure_outcome_present": false,
+      "scheduler_side_refusal_present": false,
       "schema_version": 1
     },
     "restoration_failure_outcome_success": false
   },
-  "event_bytes": 5553,
+  "event_bytes": 5568,
   "event_count": 15,
   "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/unclaimed_load_failure/vllm_runtime_events.jsonl",
-  "generated_at": "2026-05-22T14:20:35.900943+00:00",
+  "generated_at": "2026-05-22T20:21:11.792994+00:00",
   "load_failure_to_outcome_latency_ns": null,
   "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
   "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
@@ -78,7 +105,7 @@
       "role": "resident",
       "status": "served",
       "ttft_s": null,
-      "wall_latency_s": 0.217786
+      "wall_latency_s": 0.205854
     },
     {
       "connector_outcome": "not_claim_scoped",
@@ -90,7 +117,7 @@
       "role": "reuse",
       "status": "generic_connector_load_failed",
       "ttft_s": null,
-      "wall_latency_s": 0.00297
+      "wall_latency_s": 0.002864
     }
   ],
   "run_id": "pydev-connector-failure:unclaimed_load_failure",
@@ -104,6 +131,15 @@
     "vllm_version": "0.21.1rc1.dev182+g9b9d5dbaa"
   },
   "scenario": "unclaimed_load_failure",
+  "scenario_config": {
+    "allow_unclaimed_failure": true,
+    "claim_params": false,
+    "event_path": true,
+    "failure_target": null,
+    "inject_failure": true,
+    "kv_load_failure_policy": "fail",
+    "synthetic_generic": false
+  },
   "status": "ok",
   "transfer_metrics": {
     "directions": [
@@ -122,8 +158,8 @@
       10321920
     ],
     "worker_transfer_times_s": [
-      0.0007386879920959473,
-      0.0005713279843330383
+      0.0007619199752807618,
+      0.0005668799877166748
     ]
   },
   "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."
