@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -23,8 +24,12 @@ from kv_vllm_arbiter.pydev_connector_normalize import (  # noqa: E402
 
 
 DEFAULT_PARENT_DIR = ROOT.parents[1]
-DEFAULT_VLLM_SOURCE = Path("/home/krooksn/ai/runtimes/vllm/repo")
-DEFAULT_RUNNER = "/home/krooksn/ai/bin/vllm-pydev-python"
+DEFAULT_VLLM_SOURCE = (
+    Path(os.environ["VLLM_KV_RESIDENCY_VLLM_SOURCE"]).expanduser()
+    if os.environ.get("VLLM_KV_RESIDENCY_VLLM_SOURCE")
+    else None
+)
+DEFAULT_RUNNER = os.environ.get("VLLM_AUDIT_PYTHON")
 DEFAULT_ARTIFACT_DIR = ROOT / "artifacts" / "pydev_connector_failure_semantics"
 
 

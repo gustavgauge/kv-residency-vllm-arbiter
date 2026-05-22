@@ -30,9 +30,13 @@ export VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout
 export VLLM_KV_RESIDENCY_MODEL=HuggingFaceTB/SmolLM2-135M-Instruct
 ```
 
-`VLLM_AUDIT_PYTHON` is used by the make targets that import vLLM. If it is not
-set, the scripts use the current Python interpreter. `VLLM_KV_RESIDENCY_VLLM_SOURCE`
-is optional and is only used when `VLLM_KV_RESIDENCY_USE_SOURCE_TREE=1`.
+`VLLM_AUDIT_PYTHON` is used by the make targets and connector repetition
+harnesses that import vLLM. Most one-shot scripts fall back to the current
+Python interpreter when it is not set; the connector repetition harness requires
+an explicit runner because it launches child scenario processes.
+`VLLM_KV_RESIDENCY_VLLM_SOURCE` is optional. The source tree is prepended to
+`sys.path` by connector harnesses when set, and by other live probes when
+`VLLM_KV_RESIDENCY_USE_SOURCE_TREE=1`.
 
 Before collecting live evidence, confirm that the selected interpreter imports
 the patched runtime:

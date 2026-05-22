@@ -72,13 +72,13 @@ The previous `blocked_missing_vllm_runtime` result came from selecting
 selection failure, not evidence that the workstation lacks a runnable vLLM
 runtime.
 
-Using `/home/krooksn/ai/bin/vllm-stable-python`, the harness ran vLLM 0.21.0
-with `HuggingFaceTB/SmolLM2-135M-Instruct`, `max_model_len=512`, `max_tokens=8`,
-and `gpu_memory_utilization=0.35`. The resident request produced request id
-`0`, 480 prompt tokens, 8 output tokens, 0 cached tokens, 0.198272 s wall
-latency, and 0.124332 s TTFT. The reuse request produced request id `1`, 481
-prompt tokens, 8 output tokens, 464 cached tokens, 0.100546 s wall latency, and
-0.027612 s TTFT.
+Using the configured audit Python recorded in the historical summary metadata,
+the harness ran vLLM 0.21.0 with `HuggingFaceTB/SmolLM2-135M-Instruct`,
+`max_model_len=512`, `max_tokens=8`, and `gpu_memory_utilization=0.35`. The
+resident request produced request id `0`, 480 prompt tokens, 8 output tokens, 0
+cached tokens, 0.198272 s wall latency, and 0.124332 s TTFT. The reuse request
+produced request id `1`, 481 prompt tokens, 8 output tokens, 464 cached tokens,
+0.100546 s wall latency, and 0.027612 s TTFT.
 
 The reference-emission mode passed the lifecycle/outcome gate with 10 events,
 13,203 bytes, 52,370 ns analyzer runtime, active claim count 1, and registry
@@ -205,11 +205,14 @@ The controls intentionally fail the outcome gate:
 The checked-in repeated run is
 `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/`.
 That run-set id is a historical artifact identifier and is preserved in the
-generated evidence files. New public reruns should use a neutral run-set id,
-for example:
+generated evidence files; the internal tag in the id is not part of the public
+claim. New public reruns should use a neutral run-set id, for example:
 
 ```bash
-python3 scripts/run_pydev_connector_failure_repetitions.py --run-set-id 20260522Tresident_claim_connector_failure_repetitions
+export VLLM_AUDIT_PYTHON=/path/to/python-with-patched-vllm
+export VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout
+python3 scripts/run_pydev_connector_failure_repetitions.py \
+  --run-set-id 20260522Tresident_claim_connector_failure_repetitions
 ```
 
 `scripts/normalize_pydev_connector_failure_semantics.py` and the repetition

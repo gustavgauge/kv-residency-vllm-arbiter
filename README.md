@@ -6,6 +6,11 @@ minimal vLLM prototype, litmus tests, generated traces, and analysis scripts for
 checking whether future KV reuse is exposed as an accepted runtime claim rather
 than only as an eviction hint.
 
+The `resident-claim-lifecycle-outcome` branch contains connector mechanism
+evidence for the ResidentClaim lifecycle/outcome study. It is a public evidence
+branch for a local patched vLLM connector path, not a claim of upstream or
+native vLLM support.
+
 The central question is simple:
 
 ```text
@@ -47,6 +52,8 @@ artifacts/
   capacity_sweep/           # capacity-region sweep
   claim_lifecycle/          # demotion/expiry-before-loss traces
   live_scheduler_pressure/  # vllm.LLM.generate pressure-path evidence
+  pydev_connector_failure_semantics/
+                             # patched connector lifecycle/outcome evidence
   prior_art/                # semantic boundary matrix
 docs/
   contract.md               # ResidentClaim contract
@@ -54,6 +61,7 @@ docs/
   evaluation_plan.md        # litmus and sweep plan
   prior_art_boundary.md     # comparator checklist
   vllm_target.md            # patched-vLLM setup
+  public_artifact_notes.md  # provenance and public-footprint notes
 patches/
   vllm_prototype_notes.md   # files changed and behavior boundary
 scripts/                    # artifact regeneration and analysis
@@ -72,7 +80,8 @@ python scripts/generate_expected_matrix.py
 ```
 
 The vLLM-backed probes require a Python environment that imports the patched
-vLLM prototype. Configure it explicitly:
+vLLM prototype. Configure it explicitly; the scripts do not default to a
+private workstation path:
 
 ```bash
 export VLLM_AUDIT_PYTHON=/path/to/python-with-patched-vllm
@@ -104,10 +113,30 @@ python scripts/run_offload_lifecycle_hook_eval.py
 ```
 
 `make live-scheduler` is optional supporting evidence for prefix-cache hits and
-request-level latency through `vllm.LLM.generate`; the paper contribution does
+request-level latency through `vllm.LLM.generate`; the study contribution does
 not rely on a speedup claim.
 
+Connector failure-semantics reproduction uses the configured patched vLLM
+Python:
+
+```bash
+$VLLM_AUDIT_PYTHON scripts/run_pydev_connector_failure_semantics.py \
+  --scenario claimed_load_failure
+
+python3 scripts/run_pydev_connector_failure_repetitions.py \
+  --run-set-id 20260522Tresident_claim_connector_failure_repetitions
+```
+
+The full repetition harness is GPU-backed and comparatively expensive. For
+fast local checks, use `uv run --with pytest pytest -q` and
+`python3 scripts/run_offload_lifecycle_hook_eval.py --iterations 1000`.
+
 ## Key Evidence
+
+The repeated connector directory named
+`20260522Tpaper2_connector_failure_repetitions` is a historical run-set id
+preserved as provenance; the internal tag in that id is not part of the public
+claim.
 
 - `artifacts/conformance/results.json`: seven trace/materialization checks plus
   one capability-classification check.
@@ -117,13 +146,24 @@ not rely on a speedup claim.
   the `60 resident + 70 active = 130 usable blocks` boundary.
 - `artifacts/live_scheduler_pressure/summary.json`: live scheduler-path pressure
   trace with protected resident headroom affecting active request handling.
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/aggregate.json`:
+  canonical aggregate for the repeated local patched connector
+  failure-semantics run.
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/normalized_summaries.jsonl`:
+  one normalized row per generated repetition.
+- `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/*/rep-001/`:
+  representative raw traces retained for each scenario.
 - `artifacts/prior_art/prior_art_boundary.md`: semantic comparison against
   adjacent runtime primitives.
+- `docs/public_artifact_notes.md`: provenance notes for historical absolute
+  paths, local vLLM SHAs, and the lighter public raw-footprint decision.
 
 ## Scope
 
 This is a semantics and conformance artifact. It is not a production vLLM fork,
-not a performance benchmark, not a learned predictor, and not a claim that
-existing runtimes lack KV-retention primitives. The claim is narrower:
-accepted future-reuse intent needs materialization predicates, explicit
-active/resident conflict outcomes, and claim-level telemetry.
+not a performance benchmark, not a learned predictor, not native or upstream
+vLLM ResidentClaim support, and not a claim that existing runtimes lack
+KV-retention primitives. The claim is narrower: accepted future-reuse intent
+needs materialization predicates, explicit active/resident conflict outcomes,
+and claim-level telemetry; the connector evidence here is a local patched
+mechanism witness.

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -29,8 +30,12 @@ from kv_vllm_arbiter.pydev_connector_normalize import (  # noqa: E402
 
 DEFAULT_OUT_DIR = ROOT / "artifacts" / "pydev_connector_failure_semantics"
 DEFAULT_PARENT_DIR = ROOT.parents[1]
-DEFAULT_VLLM_SOURCE = Path("/home/krooksn/ai/runtimes/vllm/repo")
-DEFAULT_RUNNER = "/home/krooksn/ai/bin/vllm-pydev-python"
+DEFAULT_VLLM_SOURCE = (
+    Path(os.environ["VLLM_KV_RESIDENCY_VLLM_SOURCE"]).expanduser()
+    if os.environ.get("VLLM_KV_RESIDENCY_VLLM_SOURCE")
+    else None
+)
+DEFAULT_RUNNER = os.environ.get("VLLM_AUDIT_PYTHON")
 DEFAULT_TARGETS = {
     "success_no_event_path": 30,
     "success_path": 30,
@@ -47,8 +52,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--parent-dir", type=Path, default=DEFAULT_PARENT_DIR)
     parser.add_argument("--repo-dir", type=Path, default=ROOT)
-    parser.add_argument("--vllm-source", type=Path, default=DEFAULT_VLLM_SOURCE)
-    parser.add_argument("--runner", default=DEFAULT_RUNNER)
+    parser.add_argument(
+        "--vllm-source",
+        type=Path,
+        default=DEFAULT_VLLM_SOURCE,
+        help=(
+            "Optional patched vLLM checkout used for sys.path and provenance. "
+            "Defaults to VLLM_KV_RESIDENCY_VLLM_SOURCE when set."
+        ),
+    )
+    parser.add_argument(
+        "--runner",
+        default=DEFAULT_RUNNER,
+        help=(
+            "Python executable that imports the patched vLLM connector mechanism. "
+            "Defaults to VLLM_AUDIT_PYTHON."
+        ),
+    )
     parser.add_argument("--run-set-id", default=None)
     parser.add_argument("--model", default=None)
     parser.add_argument("--max-model-len", type=int, default=None)
@@ -78,6 +98,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    validate_external_inputs(args)
     run_set_id = args.run_set_id or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     run_root = args.out_dir / "repetitions" / run_set_id
     run_root.mkdir(parents=True, exist_ok=True)
@@ -94,7 +115,7 @@ def main() -> int:
         "run_set_id": run_set_id,
         "targets": targets,
         "runner": args.runner,
-        "vllm_source": str(args.vllm_source),
+        "vllm_source": str(args.vllm_source) if args.vllm_source is not None else None,
         "runs": [],
     }
     rows = []
@@ -202,8 +223,46 @@ def _targets(args: argparse.Namespace) -> dict[str, int]:
         targets[scenario] = int(value)
     if args.scenario:
         selected = set(args.scenario)
-        targets = {scenario: count for scenario, count in targets.items() if scenario in selected}
+        targets = {
+            scenario: count
+            for scenario, count in targets.items()
+            if scenario in selected
+        }
     return targets
+
+
+def normalize_optional_path(path: Path | None) -> Path | None:
+    if path is None:
+        return None
+    return path.expanduser()
+
+
+def resolve_runner(runner: str | None) -> str | None:
+    if not runner:
+        return None
+    candidate = Path(runner).expanduser()
+    if candidate.exists():
+        return str(candidate)
+    return shutil.which(runner)
+
+
+def validate_external_inputs(args: argparse.Namespace) -> None:
+    args.vllm_source = normalize_optional_path(args.vllm_source)
+    if args.vllm_source is not None and not args.vllm_source.exists():
+        raise SystemExit(
+            "patched vLLM source path does not exist: "
+            f"{args.vllm_source}. Set "
+            "VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout "
+            "or pass --vllm-source /path/to/vllm-checkout."
+        )
+    resolved_runner = resolve_runner(args.runner)
+    if resolved_runner is None:
+        raise SystemExit(
+            "a Python runner that imports the patched vLLM connector mechanism "
+            "is required. Set VLLM_AUDIT_PYTHON=/path/to/python-with-patched-vllm "
+            "or pass --runner /path/to/python-with-patched-vllm."
+        )
+    args.runner = resolved_runner
 
 
 def _scenario_command(
@@ -221,11 +280,11 @@ def _scenario_command(
         scenario,
         "--out-dir",
         str(raw_out_dir),
-        "--vllm-source",
-        str(args.vllm_source),
         "--run-id",
         run_id,
     ]
+    if args.vllm_source is not None:
+        command.extend(["--vllm-source", str(args.vllm_source)])
     optional_args = (
         ("--model", args.model),
         ("--max-model-len", args.max_model_len),

@@ -33,8 +33,10 @@ DEFAULT_MODEL = os.environ.get(
     "HuggingFaceTB/SmolLM2-135M-Instruct",
 )
 DEFAULT_OUT_DIR = ROOT / "artifacts" / "pydev_connector_failure_semantics"
-DEFAULT_VLLM_SOURCE = Path(
-    os.environ.get("VLLM_KV_RESIDENCY_VLLM_SOURCE", "/home/krooksn/ai/runtimes/vllm/repo")
+DEFAULT_VLLM_SOURCE = (
+    Path(os.environ["VLLM_KV_RESIDENCY_VLLM_SOURCE"]).expanduser()
+    if os.environ.get("VLLM_KV_RESIDENCY_VLLM_SOURCE")
+    else None
 )
 SHARED_PREFIX = (
     "Resident KV request-path prefix. Preserve this stable context. "
@@ -113,18 +115,53 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tokens", type=int, default=8)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.35)
     parser.add_argument("--kv-cache-memory-bytes", type=int, default=None)
-    parser.add_argument("--vllm-source", type=Path, default=DEFAULT_VLLM_SOURCE)
+    parser.add_argument(
+        "--vllm-source",
+        type=Path,
+        default=DEFAULT_VLLM_SOURCE,
+        help=(
+            "Optional patched vLLM checkout to prepend to sys.path. "
+            "Defaults to VLLM_KV_RESIDENCY_VLLM_SOURCE when set."
+        ),
+    )
     parser.add_argument("--run-id", default=None)
     return parser.parse_args()
 
 
-def maybe_add_vllm_source(path: Path) -> None:
-    if path.exists():
-        sys.path.insert(0, str(path))
+class RuntimeSelectionError(RuntimeError):
+    """The selected Python environment cannot import the patched vLLM runtime."""
+
+
+def normalize_optional_path(path: Path | None) -> Path | None:
+    if path is None:
+        return None
+    return path.expanduser()
+
+
+def maybe_add_vllm_source(path: Path | None) -> None:
+    path = normalize_optional_path(path)
+    if path is None:
+        return
+    if not path.exists():
+        raise SystemExit(
+            "patched vLLM source path does not exist: "
+            f"{path}. Set VLLM_KV_RESIDENCY_VLLM_SOURCE=/path/to/vllm-checkout "
+            "or pass --vllm-source /path/to/vllm-checkout."
+        )
+    sys.path.insert(0, str(path))
 
 
 def import_runtime() -> tuple[Any, Any]:
-    from vllm import LLM, SamplingParams
+    try:
+        from vllm import LLM, SamplingParams
+    except ImportError as exc:
+        raise RuntimeSelectionError(
+            "unable to import vLLM in the selected Python environment. "
+            "Run this script with a Python that imports the patched vLLM "
+            "connector mechanism, for example: "
+            "$VLLM_AUDIT_PYTHON scripts/run_pydev_connector_failure_semantics.py "
+            "--scenario claimed_load_failure"
+        ) from exc
 
     return LLM, SamplingParams
 
@@ -493,6 +530,8 @@ def main() -> int:
                 event_path,
                 run_id,
             )
+        except RuntimeSelectionError:
+            raise
         except Exception as exc:
             status = "harness_exception"
             request_records = [
