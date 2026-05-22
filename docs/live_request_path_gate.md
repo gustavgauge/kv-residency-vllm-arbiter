@@ -202,12 +202,14 @@ The controls intentionally fail the outcome gate:
 | `generic_counter_only` | Fails because generic counters lack claim, predicate, cache, token-map, and outcome identity. |
 | `fallback_recompute` | Fails because request service after a failed load is not counted as satisfying the accepted claim without prior refusal/demotion/expiry/harm. |
 
-The paper-grade repeated run is
+The checked-in repeated run is
 `artifacts/pydev_connector_failure_semantics/repetitions/20260522Tpaper2_connector_failure_repetitions/`.
-It was generated with:
+That run-set id is a historical artifact identifier and is preserved in the
+generated evidence files. New public reruns should use a neutral run-set id,
+for example:
 
 ```bash
-python3 scripts/run_pydev_connector_failure_repetitions.py --run-set-id 20260522Tpaper2_connector_failure_repetitions
+python3 scripts/run_pydev_connector_failure_repetitions.py --run-set-id 20260522Tresident_claim_connector_failure_repetitions
 ```
 
 `scripts/normalize_pydev_connector_failure_semantics.py` and the repetition
