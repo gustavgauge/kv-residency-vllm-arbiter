@@ -22,6 +22,22 @@ Every event should include:
 }
 ```
 
+Lifecycle/outcome hook events also include an explicit ordering and identity
+tuple:
+
+```json
+{
+  "event_sequence": 1,
+  "lifecycle_generation": 1,
+  "offload_generation": 1,
+  "predicate_id": "predicate:leading-prefix-8",
+  "materialization_predicate": "leading_prefix_at_least(8)",
+  "reusable_object_id": "kv-object:reference-prefix",
+  "request_token_map_id": "token-map:reference-prefix-v1",
+  "cache_identity": "patched-vllm-reference-cache:v1"
+}
+```
+
 ## Event Types
 
 | Event | Required meaning |
@@ -40,6 +56,10 @@ Every event should include:
 | `resident_claim_preserved` | Resident claim survived an active pressure event. |
 | `resident_claim_relaxed` | Resident claim was downgraded by policy. |
 | `resident_claim_offloaded` | Resident state moved to a slower tier. |
+| `resident_claim_restore_required` | Later reuse reached a claimed object that cannot satisfy the predicate from primary-resident state alone. |
+| `resident_claim_restored` | Claimed state was restored from the offload tier before predicate-satisfying reuse. |
+| `resident_claim_reuse_after_restore` | Reuse satisfied the materialization predicate after ordered restoration. |
+| `resident_claim_restoration_failed` | Controlled restoration-unavailable/failure path fired for a claim. |
 | `active_live_bounded` | Active live KV was bounded by recompute, offload, or another mechanism. |
 
 ## Block Event Fields
@@ -74,6 +94,15 @@ Claim events should include:
   "protection_mode": "hard_exclude"
 }
 ```
+
+Offload lifecycle events should include either concrete `block_ids` or
+`block_count_footprint`, plus `cache_tier`, `cache_tier_from`,
+`cache_tier_to`, and `restored_from_offload_tier` when restoration is claimed.
+Fallback recompute is not a restoration event for the offloadable contract.
+
+Restoration-failure events must carry `claim_scoped_outcome_type` and
+`outcome_claim_id`, and the allowed outcome types are `refusal`, `demotion`,
+`expiry`, and `harm`.
 
 For `predicate="leading_prefix_at_least"`, `resident_blocks_materialized` is not
 the materialization predicate by itself. The runtime must evaluate

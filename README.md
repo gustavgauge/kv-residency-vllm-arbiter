@@ -29,12 +29,17 @@ explicit claim-level outcome.
   preserving the useful leading-prefix predicate the application cares about.
 - **Conformance boundary:** soft priority and TTL-like retention are useful
   primitives but are not a sound lowering of hard resident claims by themselves.
+- **Offload lifecycle/outcome witness:** a reference state-machine hook emits
+  claim-scoped offload, restore-before-reuse, restoration failure, and
+  claim-scoped refusal events. This is a conformance witness, not production
+  host-offload performance.
 
 ## Repository Layout
 
 ```text
 artifacts/
   conformance/              # ResidentClaim litmus results and summaries
+  offload_lifecycle/        # reference offload hook traces and metrics
   native_blockpool/         # native allocator counterexample trace
   no_admit/                 # write no-admit negative control
   claim_metadata/           # accepted-claim metadata trace
@@ -95,6 +100,7 @@ make claim-lifecycle
 make conformance
 make prior-art
 make live-scheduler-pressure
+python scripts/run_offload_lifecycle_hook_eval.py
 ```
 
 `make live-scheduler` is optional supporting evidence for prefix-cache hits and

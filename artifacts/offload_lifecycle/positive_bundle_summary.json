@@ -1,0 +1,30 @@
+{
+  "active_claim_count": 1,
+  "analyzer_runtime_ns": 40630,
+  "claim_registry_size": 1,
+  "event_bytes": 8600,
+  "event_counts": {
+    "active_request_refused": 1,
+    "resident_claim_accepted": 1,
+    "resident_claim_materialized": 1,
+    "resident_claim_offloaded": 2,
+    "resident_claim_restoration_failed": 1,
+    "resident_claim_restore_required": 2,
+    "resident_claim_restored": 1,
+    "resident_claim_reuse_after_restore": 1
+  },
+  "event_volume": 10,
+  "gate_summary": "artifacts/offload_lifecycle/positive_bundle_gate_summary.json",
+  "hook_event_emission_enabled": true,
+  "iterations": 1000,
+  "jsonl": "artifacts/offload_lifecycle/positive_bundle.jsonl",
+  "label": "positive_bundle",
+  "passes_reference_gate": true,
+  "reference_missing_requirements": [],
+  "scenario": "positive_bundle",
+  "trace_generation_latency_ns_max": 31960,
+  "trace_generation_latency_ns_mean": 18803.4,
+  "trace_generation_latency_ns_median": 18670.0,
+  "trace_generation_latency_ns_min": 18150,
+  "trace_generation_throughput_traces_per_s": 53181.74
+}

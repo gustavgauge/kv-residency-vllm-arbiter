@@ -1,0 +1,30 @@
+{
+  "active_claim_count": 0,
+  "analyzer_runtime_ns": 14509,
+  "claim_registry_size": 0,
+  "event_bytes": 0,
+  "event_counts": {},
+  "event_volume": 0,
+  "gate_summary": "artifacts/offload_lifecycle/baseline_no_offload_hook_gate_summary.json",
+  "hook_event_emission_enabled": false,
+  "iterations": 1000,
+  "jsonl": "artifacts/offload_lifecycle/baseline_no_offload_hook.jsonl",
+  "label": "baseline_no_offload_hook",
+  "passes_reference_gate": false,
+  "reference_missing_requirements": [
+    "fixed_cache_identity_and_deterministic_request_token_map",
+    "materialization_predicate",
+    "offload_restorability",
+    "ordered_lifecycle_events",
+    "pre_registered_accepted_claim",
+    "restoration_failure_outcome",
+    "reusable_object_id",
+    "stable_claim_id_and_fixed_materialization_predicate"
+  ],
+  "scenario": "baseline_no_hook",
+  "trace_generation_latency_ns_max": 9260,
+  "trace_generation_latency_ns_mean": 2585.3,
+  "trace_generation_latency_ns_median": 2540.0,
+  "trace_generation_latency_ns_min": 2480,
+  "trace_generation_throughput_traces_per_s": 386807.54
+}

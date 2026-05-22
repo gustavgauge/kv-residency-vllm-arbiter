@@ -1,0 +1,85 @@
+{
+  "claim": {
+    "cache_runtime_identity_fixed": true,
+    "claim_id": "claim:reference-offload",
+    "deterministic_request_token_map": true,
+    "materialization_predicate": "leading_prefix_at_least(8)",
+    "materialization_predicate_fixed": true,
+    "post_hoc_claim_naming": false,
+    "pre_registered_accepted_claim": true,
+    "predicate_id": "predicate:leading-prefix-8",
+    "prefix_id": "prefix:reference",
+    "request_token_map_id": "token-map:reference-prefix-v1",
+    "reusable_object_id": "kv-object:reference-prefix",
+    "stable_claim_id": true
+  },
+  "evidence_anchors": {
+    "offload_restorability": [
+      {
+        "kind": "trace",
+        "note": "Reference hook trace contains offload, restore-before-reuse, and reuse events.",
+        "path": "artifacts/offload_lifecycle/positive_bundle.jsonl"
+      }
+    ],
+    "restoration_failure_outcome": [
+      {
+        "kind": "trace",
+        "note": "Reference hook trace contains controlled restoration failure and claim-scoped outcome.",
+        "path": "artifacts/offload_lifecycle/positive_bundle.jsonl"
+      }
+    ]
+  },
+  "failure_injection": {
+    "claim_scoped_outcome": true,
+    "claim_scoped_outcome_type": "refusal",
+    "controlled_restoration_unavailable": true,
+    "injected_restoration_failure": true,
+    "outcome_claim_id": "claim:reference-offload",
+    "outcome_event": {
+      "arbiter_action": "restore_unavailable_refuse",
+      "blocking_claim_ids": [
+        "claim:reference-offload"
+      ],
+      "cache_identity": "patched-vllm-reference-cache:v1",
+      "claim_id": "claim:reference-offload",
+      "event": "active_request_refused",
+      "event_sequence": 10,
+      "feasibility": "infeasible_restore_claimed_kv",
+      "lifecycle_generation": 1,
+      "materialization_predicate": "leading_prefix_at_least(8)",
+      "offload_generation": 2,
+      "outcome_claim_id": "claim:reference-offload",
+      "outcome_type": "refusal",
+      "policy": "reference_offload_hook",
+      "predicate_id": "predicate:leading-prefix-8",
+      "prefix_id": "prefix:reference",
+      "request_id": "reuse-failure",
+      "request_token_map_id": "token-map:reference-prefix-v1",
+      "restoration_failure_event_sequence": 9,
+      "reusable_object_id": "kv-object:reference-prefix",
+      "run_id": "reference-offload-lifecycle",
+      "schema_version": 1,
+      "timestamp_ns": 1779452920341296759,
+      "usable_blocks": 16
+    }
+  },
+  "lifecycle": {
+    "failure_generation": 2,
+    "ordered_lifecycle_events": true,
+    "success_generation": 1
+  },
+  "offload": {
+    "claim_joined_offload": true,
+    "kv_state_moved_to_offload_tier": true,
+    "offload_generation": 1
+  },
+  "reference_missing_requirements": [],
+  "restoration": {
+    "completed_before_reuse_satisfied_predicate": true,
+    "later_reuse_required_restoration": true,
+    "restoration_source": "offload_tier",
+    "restored_from_offload_tier": true,
+    "reuse_event_sequence": 6
+  },
+  "schema_version": 1
+}

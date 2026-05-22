@@ -17,6 +17,13 @@ from .materialization import (
     evaluate_leading_prefix,
     leading_prefix_length,
 )
+from .offload_lifecycle import (
+    OffloadLifecycleConfig,
+    OffloadLifecycleEvaluation,
+    ReferenceOffloadLifecycleHook,
+    build_reference_trace,
+    evaluate_offload_lifecycle_events,
+)
 from .telemetry import ArbiterEvent
 from .trace_summary import (
     ActiveResidentOutcome,
@@ -33,14 +40,19 @@ __all__ = [
     "ConformanceStatus",
     "LeadingPrefixEvaluation",
     "NativeHarmSummary",
+    "OffloadLifecycleConfig",
+    "OffloadLifecycleEvaluation",
     "PolicyOutcome",
+    "ReferenceOffloadLifecycleHook",
     "backend_approximation_litmus",
+    "build_reference_trace",
     "classify_policy",
     "classify_active_resident_outcome",
     "evaluate_demotion_or_expiry_before_loss",
     "evaluate_hard_claim_infeasibility",
     "evaluate_leading_prefix",
     "evaluate_no_accepted_claim_no_harm",
+    "evaluate_offload_lifecycle_events",
     "evaluate_write_no_admit_separation",
     "fits",
     "leading_prefix_length",

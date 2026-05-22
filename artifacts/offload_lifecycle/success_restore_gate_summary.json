@@ -1,0 +1,62 @@
+{
+  "claim": {
+    "cache_runtime_identity_fixed": true,
+    "claim_id": "claim:reference-offload",
+    "deterministic_request_token_map": true,
+    "materialization_predicate": "leading_prefix_at_least(8)",
+    "materialization_predicate_fixed": true,
+    "post_hoc_claim_naming": false,
+    "pre_registered_accepted_claim": true,
+    "predicate_id": "predicate:leading-prefix-8",
+    "prefix_id": "prefix:reference",
+    "request_token_map_id": "token-map:reference-prefix-v1",
+    "reusable_object_id": "kv-object:reference-prefix",
+    "stable_claim_id": true
+  },
+  "evidence_anchors": {
+    "offload_restorability": [
+      {
+        "kind": "trace",
+        "note": "Reference hook trace contains offload, restore-before-reuse, and reuse events.",
+        "path": "artifacts/offload_lifecycle/success_restore.jsonl"
+      }
+    ],
+    "restoration_failure_outcome": [
+      {
+        "kind": "trace",
+        "note": "Reference hook trace contains controlled restoration failure and claim-scoped outcome.",
+        "path": "artifacts/offload_lifecycle/success_restore.jsonl"
+      }
+    ]
+  },
+  "failure_injection": {
+    "claim_scoped_outcome": false,
+    "claim_scoped_outcome_type": null,
+    "controlled_restoration_unavailable": false,
+    "injected_restoration_failure": false,
+    "outcome_claim_id": null,
+    "outcome_event": null
+  },
+  "lifecycle": {
+    "failure_generation": null,
+    "ordered_lifecycle_events": false,
+    "success_generation": 1
+  },
+  "offload": {
+    "claim_joined_offload": true,
+    "kv_state_moved_to_offload_tier": true,
+    "offload_generation": 1
+  },
+  "reference_missing_requirements": [
+    "ordered_lifecycle_events",
+    "restoration_failure_outcome"
+  ],
+  "restoration": {
+    "completed_before_reuse_satisfied_predicate": true,
+    "later_reuse_required_restoration": true,
+    "restoration_source": "offload_tier",
+    "restored_from_offload_tier": true,
+    "reuse_event_sequence": 6
+  },
+  "schema_version": 1
+}

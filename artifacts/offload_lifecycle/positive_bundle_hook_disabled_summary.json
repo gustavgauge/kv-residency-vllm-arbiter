@@ -1,0 +1,30 @@
+{
+  "active_claim_count": 0,
+  "analyzer_runtime_ns": 14340,
+  "claim_registry_size": 0,
+  "event_bytes": 0,
+  "event_counts": {},
+  "event_volume": 0,
+  "gate_summary": "artifacts/offload_lifecycle/positive_bundle_hook_disabled_gate_summary.json",
+  "hook_event_emission_enabled": false,
+  "iterations": 1000,
+  "jsonl": "artifacts/offload_lifecycle/positive_bundle_hook_disabled.jsonl",
+  "label": "positive_bundle_hook_disabled",
+  "passes_reference_gate": false,
+  "reference_missing_requirements": [
+    "fixed_cache_identity_and_deterministic_request_token_map",
+    "materialization_predicate",
+    "offload_restorability",
+    "ordered_lifecycle_events",
+    "pre_registered_accepted_claim",
+    "restoration_failure_outcome",
+    "reusable_object_id",
+    "stable_claim_id_and_fixed_materialization_predicate"
+  ],
+  "scenario": "positive_bundle",
+  "trace_generation_latency_ns_max": 40349,
+  "trace_generation_latency_ns_mean": 18585.6,
+  "trace_generation_latency_ns_median": 18430.0,
+  "trace_generation_latency_ns_min": 18040,
+  "trace_generation_throughput_traces_per_s": 53805.04
+}

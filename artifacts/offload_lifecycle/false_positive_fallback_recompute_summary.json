@@ -1,0 +1,32 @@
+{
+  "active_claim_count": 1,
+  "analyzer_runtime_ns": 28120,
+  "claim_registry_size": 1,
+  "event_bytes": 5063,
+  "event_counts": {
+    "resident_claim_accepted": 1,
+    "resident_claim_materialized": 1,
+    "resident_claim_offloaded": 1,
+    "resident_claim_restore_required": 1,
+    "resident_claim_restored": 1,
+    "resident_claim_reuse_after_restore": 1
+  },
+  "event_volume": 6,
+  "gate_summary": "artifacts/offload_lifecycle/false_positive_fallback_recompute_gate_summary.json",
+  "hook_event_emission_enabled": true,
+  "iterations": 1000,
+  "jsonl": "artifacts/offload_lifecycle/false_positive_fallback_recompute.jsonl",
+  "label": "false_positive_fallback_recompute",
+  "passes_reference_gate": false,
+  "reference_missing_requirements": [
+    "offload_restorability",
+    "ordered_lifecycle_events",
+    "restoration_failure_outcome"
+  ],
+  "scenario": "fallback_recompute",
+  "trace_generation_latency_ns_max": 24949,
+  "trace_generation_latency_ns_mean": 12515.6,
+  "trace_generation_latency_ns_median": 12400.0,
+  "trace_generation_latency_ns_min": 12150,
+  "trace_generation_throughput_traces_per_s": 79900.14
+}

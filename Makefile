@@ -1,7 +1,7 @@
 PYTHON ?= python
 VLLM_AUDIT_PYTHON ?= python
 
-.PHONY: test matrix doctor native-blockpool-probe native-summary no-admit-probe claim-metadata-probe hard-claim-probe classify-hard-claim capacity-sweep prior-art live-scheduler live-scheduler-pressure claim-lifecycle conformance
+.PHONY: test matrix doctor native-blockpool-probe native-summary no-admit-probe claim-metadata-probe hard-claim-probe classify-hard-claim capacity-sweep prior-art live-scheduler live-scheduler-pressure claim-lifecycle conformance offload-lifecycle
 
 test:
 	uv run --with pytest pytest -q
@@ -47,3 +47,6 @@ claim-lifecycle:
 
 conformance:
 	$(PYTHON) scripts/run_conformance_suite.py
+
+offload-lifecycle:
+	$(PYTHON) scripts/run_offload_lifecycle_hook_eval.py
