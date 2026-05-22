@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import inspect
 import json
 import os
 import statistics
@@ -54,6 +56,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kv-cache-memory-bytes", type=int, default=None)
     parser.add_argument("--require-vllm", action="store_true")
     parser.add_argument("--use-source-tree", action="store_true")
+    parser.add_argument(
+        "--inject-resident-claim-params",
+        action="store_true",
+        help=(
+            "Attach ResidentClaim-shaped kv_transfer_params to served vLLM "
+            "requests so an env-gated pydev runtime hook can observe them."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -82,6 +92,23 @@ def import_runtime() -> tuple[Any | None, Any | None, str | None]:
         return LLM, SamplingParams, None
     except Exception as exc:
         return None, None, f"{type(exc).__name__}: {exc}"
+
+
+def runtime_payload() -> dict[str, Any]:
+    import torch
+    import vllm
+
+    return {
+        "vllm_version": getattr(vllm, "__version__", None),
+        "vllm_file": inspect.getfile(vllm),
+        "torch_version": torch.__version__,
+        "torch_cuda": torch.version.cuda,
+        "cuda_available": torch.cuda.is_available(),
+        "device_count": torch.cuda.device_count(),
+        "device0": torch.cuda.get_device_name(0)
+        if torch.cuda.is_available()
+        else None,
+    }
 
 
 def make_prompts() -> list[tuple[str, str]]:
@@ -138,6 +165,42 @@ def output_record(role: str, output: Any, started: float, ended: float) -> dict[
     }
 
 
+def resident_claim_params(role: str, prompt: str, run_id: str) -> dict[str, Any]:
+    prompt_digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()[:16]
+    return {
+        "resident_claim": True,
+        "resident_claim_id": f"{run_id}:claim:live-request-path",
+        "resident_claim_role": role,
+        "predicate_id": "predicate:live-leading-prefix",
+        "materialization_predicate": "leading_prefix_at_least(1)",
+        "prefix_id": f"prefix:prompt:{prompt_digest}",
+        "reusable_object_id": f"vllm-request-prefix:{prompt_digest}",
+        "cache_identity": "vllm-live-request-path-cache:v1",
+        "request_token_map_id": f"token-map:prompt:{prompt_digest}",
+        "instrumentation_scope": INSTRUMENTATION_SCOPE,
+    }
+
+
+def sampling_params(
+    args: argparse.Namespace,
+    SamplingParams: Any,
+    *,
+    role: str,
+    prompt: str,
+) -> Any:
+    extra_args = None
+    if args.inject_resident_claim_params:
+        extra_args = {
+            "kv_transfer_params": resident_claim_params(role, prompt, args.run_id)
+        }
+    return SamplingParams(
+        temperature=0,
+        max_tokens=args.max_tokens,
+        ignore_eos=True,
+        extra_args=extra_args,
+    )
+
+
 def run_vllm_requests(args: argparse.Namespace, LLM: Any, SamplingParams: Any) -> list[LiveRequestRecord]:
     os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
     llm_kwargs: dict[str, Any] = {
@@ -154,8 +217,6 @@ def run_vllm_requests(args: argparse.Namespace, LLM: Any, SamplingParams: Any) -
         llm_kwargs["kv_cache_memory_bytes"] = args.kv_cache_memory_bytes
 
     llm = LLM(**llm_kwargs)
-    sampling = SamplingParams(temperature=0, max_tokens=args.max_tokens, ignore_eos=True)
-
     records: list[LiveRequestRecord] = []
     for role, prompt in make_prompts():
         if role == "failure":
@@ -175,7 +236,11 @@ def run_vllm_requests(args: argparse.Namespace, LLM: Any, SamplingParams: Any) -
             )
             continue
         started = time.perf_counter()
-        output = llm.generate([prompt], sampling, use_tqdm=False)[0]
+        output = llm.generate(
+            [prompt],
+            sampling_params(args, SamplingParams, role=role, prompt=prompt),
+            use_tqdm=False,
+        )[0]
         ended = time.perf_counter()
         records.append(LiveRequestRecord.from_mapping(output_record(role, output, started, ended)))
     return records
@@ -193,7 +258,8 @@ def blocked_payload(args: argparse.Namespace, reason: str) -> dict[str, Any]:
         "instrumentation_scope": INSTRUMENTATION_SCOPE,
         "claim_boundary": (
             "No live request-path evidence collected; vLLM and torch were not "
-            "importable in the selected Python."
+            "importable in the selected Python. This is an interpreter-selection "
+            "failure, not evidence that no workstation vLLM runtime exists."
         ),
     }
 
@@ -255,10 +321,17 @@ def render_markdown(payload: dict[str, Any]) -> str:
         )
 
     records = payload["records"]
+    runtime = payload.get("runtime", {})
     lines = [
         "# Live Request-Path Harness",
         "",
         "Scope: request-path coupled reference instrumentation, not native vLLM offload.",
+        "",
+        f"Python: `{payload['python']}`",
+        "",
+        f"vLLM: `{runtime.get('vllm_version')}` from `{runtime.get('vllm_file')}`",
+        "",
+        f"Torch/CUDA: `{runtime.get('torch_version')}` / `{runtime.get('torch_cuda')}` on `{runtime.get('device0')}`",
         "",
         "| Mode | Gate | Events | Bytes | Mean latency s | Mean TTFT s | Analyzer ns | Missing requirements |",
         "|---|---|---:|---:|---:|---:|---:|---|",
@@ -282,7 +355,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append(
             f"- `{record['role']}` request `{record['request_id']}`: "
             f"status `{record['status']}`, latency `{record['wall_latency_s']}` s, "
-            f"TTFT `{record['ttft_s']}` s."
+            f"TTFT `{record['ttft_s']}` s, prompt tokens "
+            f"`{record['num_prompt_tokens']}`, cached tokens "
+            f"`{record['num_cached_tokens']}`, output tokens "
+            f"`{record['num_output_tokens']}`."
         )
     lines.append("")
     return "\n".join(lines)
@@ -353,7 +429,9 @@ def main() -> int:
         "status": "ok",
         "model": str(args.model),
         "python": sys.executable,
+        "runtime": runtime_payload(),
         "instrumentation_scope": INSTRUMENTATION_SCOPE,
+        "resident_claim_params_injected": bool(args.inject_resident_claim_params),
         "claim_boundary": (
             "Request ids and timings come from vLLM LLM.generate where vLLM is "
             "available; offload lifecycle/outcome transitions are produced by "

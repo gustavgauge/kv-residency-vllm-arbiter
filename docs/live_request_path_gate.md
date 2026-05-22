@@ -64,3 +64,37 @@ when supplied live vLLM request ids/timing.
 
 It does not show native vLLM host offload, production serving overhead, or
 upstream ResidentClaim support.
+
+## 2026-05-22 Live Runtime Result
+
+The previous `blocked_missing_vllm_runtime` result came from selecting
+`/usr/bin/python3`, which lacks `torch` and `vllm`. It is an environment
+selection failure, not evidence that the workstation lacks a runnable vLLM
+runtime.
+
+Using `/home/krooksn/ai/bin/vllm-stable-python`, the harness ran vLLM 0.21.0
+with `HuggingFaceTB/SmolLM2-135M-Instruct`, `max_model_len=512`, `max_tokens=8`,
+and `gpu_memory_utilization=0.35`. The resident request produced request id
+`0`, 480 prompt tokens, 8 output tokens, 0 cached tokens, 0.198272 s wall
+latency, and 0.124332 s TTFT. The reuse request produced request id `1`, 481
+prompt tokens, 8 output tokens, 464 cached tokens, 0.100546 s wall latency, and
+0.027612 s TTFT.
+
+The reference-emission mode passed the lifecycle/outcome gate with 10 events,
+13,203 bytes, 52,370 ns analyzer runtime, active claim count 1, and registry
+size 1. The baseline no-hook and event-emission-disabled modes both failed the
+gate with zero events. The generic substrate false-positive control failed the
+gate with two generic events. This is useful request-path evidence, but it is
+still `request_path_coupled_reference_not_native_vllm_offload`.
+
+The editable pydev lane was also exercised after adding an env-gated Python-side
+probe. With `VLLM_RESIDENT_CLAIM_EVENT_PATH` set and ResidentClaim-shaped
+`kv_transfer_params` injected, the patched vLLM request hook emitted two
+runtime JSONL records, one per served request, under
+`artifacts/live_request_path_pydev_hook_enabled/vllm_runtime_events.jsonl`.
+Those events use vLLM internal request ids with suffixes, while the harness
+summary records the public `RequestOutput` ids. They are joinable by role,
+claim id, and prompt digest, not evidence of a native offload lifecycle. The
+events came from `Request` construction, not from the native offload connector.
+vLLM warned that no KVConnector was configured and disabled KVTransfer for those
+requests, so native offload support is still not claimed.

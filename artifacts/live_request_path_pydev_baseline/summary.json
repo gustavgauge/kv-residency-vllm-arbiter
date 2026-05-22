@@ -1,21 +1,21 @@
 {
   "claim_boundary": "Request ids and timings come from vLLM LLM.generate where vLLM is available; offload lifecycle/outcome transitions are produced by the reference hook and are not native vLLM host-offload evidence.",
-  "generated_at": "2026-05-22T13:13:15.815935+00:00",
+  "generated_at": "2026-05-22T13:09:30.290834+00:00",
   "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
   "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
   "overhead": {
-    "enabled_analyzer_runtime_ns": 52370,
-    "enabled_event_bytes_minus_no_hook": 13203,
+    "enabled_analyzer_runtime_ns": 48560,
+    "enabled_event_bytes_minus_no_hook": 13200,
     "enabled_event_volume_minus_no_hook": 10,
     "enabled_latency_s_minus_disabled": 0.0,
     "enabled_latency_s_minus_no_hook": 0.0,
-    "enabled_trace_build_ns_minus_disabled": 719
+    "enabled_trace_build_ns_minus_disabled": -330
   },
-  "python": "/home/krooksn/ai/runtimes/vllm/envs/stable-wheel-auto/bin/python",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
   "records": [
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 22100,
+      "analyzer_runtime_ns": 21020,
       "claim_registry_size": 0,
       "contract_event_order": [],
       "event_bytes": 0,
@@ -23,7 +23,7 @@
       "event_volume": 0,
       "hook_event_emission_enabled": false,
       "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
-      "jsonl": "artifacts/live_request_path/no_hook.jsonl",
+      "jsonl": "artifacts/live_request_path_pydev_baseline/no_hook.jsonl",
       "label": "no_hook",
       "native_vllm_offload_claimed": false,
       "passes_reference_gate": false,
@@ -41,19 +41,19 @@
         "cached_tokens_after_first_request": [
           464
         ],
-        "latency_s_mean": 0.099606,
-        "latency_s_sum": 0.298818,
+        "latency_s_mean": 0.102355,
+        "latency_s_sum": 0.307065,
         "output_tokens": 16,
         "request_count": 3,
         "served_request_count": 2,
-        "ttft_s_mean": 0.075972
+        "ttft_s_mean": 0.084188
       },
       "scenario": "baseline_no_hook",
-      "trace_build_ns": 28460
+      "trace_build_ns": 26560
     },
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 15870,
+      "analyzer_runtime_ns": 14880,
       "claim_registry_size": 0,
       "contract_event_order": [],
       "event_bytes": 0,
@@ -61,7 +61,7 @@
       "event_volume": 0,
       "hook_event_emission_enabled": false,
       "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
-      "jsonl": "artifacts/live_request_path/hook_integrated_event_emission_disabled.jsonl",
+      "jsonl": "artifacts/live_request_path_pydev_baseline/hook_integrated_event_emission_disabled.jsonl",
       "label": "hook_integrated_event_emission_disabled",
       "native_vllm_offload_claimed": false,
       "passes_reference_gate": false,
@@ -79,19 +79,19 @@
         "cached_tokens_after_first_request": [
           464
         ],
-        "latency_s_mean": 0.099606,
-        "latency_s_sum": 0.298818,
+        "latency_s_mean": 0.102355,
+        "latency_s_sum": 0.307065,
         "output_tokens": 16,
         "request_count": 3,
         "served_request_count": 2,
-        "ttft_s_mean": 0.075972
+        "ttft_s_mean": 0.084188
       },
       "scenario": "positive_bundle",
-      "trace_build_ns": 58520
+      "trace_build_ns": 51780
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 52370,
+      "analyzer_runtime_ns": 48560,
       "claim_registry_size": 1,
       "contract_event_order": [
         "claim_accepted",
@@ -105,7 +105,7 @@
         "restoration_failed",
         "active_request_refused"
       ],
-      "event_bytes": 13203,
+      "event_bytes": 13200,
       "event_counts": {
         "active_request_refused": 1,
         "resident_claim_accepted": 1,
@@ -119,7 +119,7 @@
       "event_volume": 10,
       "hook_event_emission_enabled": true,
       "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
-      "jsonl": "artifacts/live_request_path/hook_integrated_event_emission_enabled.jsonl",
+      "jsonl": "artifacts/live_request_path_pydev_baseline/hook_integrated_event_emission_enabled.jsonl",
       "label": "hook_integrated_event_emission_enabled",
       "native_vllm_offload_claimed": false,
       "passes_reference_gate": true,
@@ -128,19 +128,19 @@
         "cached_tokens_after_first_request": [
           464
         ],
-        "latency_s_mean": 0.099606,
-        "latency_s_sum": 0.298818,
+        "latency_s_mean": 0.102355,
+        "latency_s_sum": 0.307065,
         "output_tokens": 16,
         "request_count": 3,
         "served_request_count": 2,
-        "ttft_s_mean": 0.075972
+        "ttft_s_mean": 0.084188
       },
       "scenario": "positive_bundle",
-      "trace_build_ns": 59239
+      "trace_build_ns": 51450
     },
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 23180,
+      "analyzer_runtime_ns": 19840,
       "claim_registry_size": 0,
       "contract_event_order": [],
       "event_bytes": 1107,
@@ -151,7 +151,7 @@
       "event_volume": 2,
       "hook_event_emission_enabled": true,
       "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
-      "jsonl": "artifacts/live_request_path/false_positive_generic_substrate.jsonl",
+      "jsonl": "artifacts/live_request_path_pydev_baseline/false_positive_generic_substrate.jsonl",
       "label": "false_positive_generic_substrate",
       "native_vllm_offload_claimed": false,
       "passes_reference_gate": false,
@@ -169,15 +169,15 @@
         "cached_tokens_after_first_request": [
           464
         ],
-        "latency_s_mean": 0.099606,
-        "latency_s_sum": 0.298818,
+        "latency_s_mean": 0.102355,
+        "latency_s_sum": 0.307065,
         "output_tokens": 16,
         "request_count": 3,
         "served_request_count": 2,
-        "ttft_s_mean": 0.075972
+        "ttft_s_mean": 0.084188
       },
       "scenario": "generic_substrate",
-      "trace_build_ns": 18450
+      "trace_build_ns": 15680
     }
   ],
   "request_records": [
@@ -188,8 +188,8 @@
       "request_id": "0",
       "role": "resident",
       "status": "served",
-      "ttft_s": 0.12433195114135742,
-      "wall_latency_s": 0.19827240098675247
+      "ttft_s": 0.14220905303955078,
+      "wall_latency_s": 0.21351695200428367
     },
     {
       "num_cached_tokens": 464,
@@ -198,8 +198,8 @@
       "request_id": "1",
       "role": "reuse",
       "status": "served",
-      "ttft_s": 0.027611970901489258,
-      "wall_latency_s": 0.10054570299689658
+      "ttft_s": 0.026166677474975586,
+      "wall_latency_s": 0.09354749199701473
     },
     {
       "num_cached_tokens": null,
@@ -209,18 +209,8 @@
       "role": "failure",
       "status": "controlled_refusal_by_harness",
       "ttft_s": null,
-      "wall_latency_s": 2.1999585442245007e-07
+      "wall_latency_s": 8.998904377222061e-08
     }
   ],
-  "resident_claim_params_injected": false,
-  "runtime": {
-    "cuda_available": true,
-    "device0": "NVIDIA GeForce RTX 3090",
-    "device_count": 1,
-    "torch_cuda": "13.0",
-    "torch_version": "2.11.0+cu130",
-    "vllm_file": "/home/krooksn/ai/runtimes/vllm/envs/stable-wheel-auto/lib/python3.12/site-packages/vllm/__init__.py",
-    "vllm_version": "0.21.0"
-  },
   "status": "ok"
 }

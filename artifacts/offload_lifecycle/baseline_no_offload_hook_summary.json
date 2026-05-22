@@ -1,6 +1,6 @@
 {
   "active_claim_count": 0,
-  "analyzer_runtime_ns": 14500,
+  "analyzer_runtime_ns": 14670,
   "claim_registry_size": 0,
   "event_bytes": 0,
   "event_counts": {},
@@ -22,9 +22,9 @@
     "stable_claim_id_and_fixed_materialization_predicate"
   ],
   "scenario": "baseline_no_hook",
-  "trace_generation_latency_ns_max": 22010,
-  "trace_generation_latency_ns_mean": 2653.6,
-  "trace_generation_latency_ns_median": 2520.0,
-  "trace_generation_latency_ns_min": 2450,
-  "trace_generation_throughput_traces_per_s": 376844.56
+  "trace_generation_latency_ns_max": 8470,
+  "trace_generation_latency_ns_mean": 2510.4,
+  "trace_generation_latency_ns_median": 2470.0,
+  "trace_generation_latency_ns_min": 2410,
+  "trace_generation_throughput_traces_per_s": 398339.09
 }

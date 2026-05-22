@@ -16,5 +16,11 @@ artifacts/*
 !artifacts/offload_lifecycle/**
 !artifacts/live_request_path/
 !artifacts/live_request_path/**
+!artifacts/live_request_path_pydev_baseline/
+!artifacts/live_request_path_pydev_baseline/**
+!artifacts/live_request_path_pydev_hook_disabled/
+!artifacts/live_request_path_pydev_hook_disabled/**
+!artifacts/live_request_path_pydev_hook_enabled/
+!artifacts/live_request_path_pydev_hook_enabled/**
 vendor/
 vllm/
