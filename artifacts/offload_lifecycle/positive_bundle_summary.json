@@ -1,6 +1,6 @@
 {
   "active_claim_count": 1,
-  "analyzer_runtime_ns": 41270,
+  "analyzer_runtime_ns": 48370,
   "claim_registry_size": 1,
   "event_bytes": 8600,
   "event_counts": {
@@ -22,9 +22,9 @@
   "passes_reference_gate": true,
   "reference_missing_requirements": [],
   "scenario": "positive_bundle",
-  "trace_generation_latency_ns_max": 35790,
-  "trace_generation_latency_ns_mean": 19060.3,
-  "trace_generation_latency_ns_median": 18890.0,
-  "trace_generation_latency_ns_min": 18560,
-  "trace_generation_throughput_traces_per_s": 52465.08
+  "trace_generation_latency_ns_max": 32620,
+  "trace_generation_latency_ns_mean": 18885.8,
+  "trace_generation_latency_ns_median": 18590.0,
+  "trace_generation_latency_ns_min": 18180,
+  "trace_generation_throughput_traces_per_s": 52949.94
 }

@@ -155,3 +155,45 @@ connector run emitted a store and worker completion, then failed in vLLM's
 transfer stats. The successful connector evidence therefore disables stats
 logging and records latency/request counters from the harness summary rather
 than vLLM stat logging.
+
+## 2026-05-22 Pydev Connector Failure Semantics
+
+`scripts/run_pydev_connector_failure_semantics.py` exercises the same patched
+pydev `OffloadingConnector` path with an env-gated CPU-to-GPU load failure. The
+scenario artifacts are under
+`artifacts/pydev_connector_failure_semantics/`, and
+`kv_vllm_arbiter.pydev_connector_failure.evaluate_pydev_connector_events`
+classifies the event streams.
+
+The passing failure scenario is `claimed_load_failure`. It first stores resident
+KV through a `GPU -> CPU` worker transfer, resets only the local prefix cache,
+observes a reuse lookup hit for 448 tokens, creates a load job, injects a
+controlled failure into that same claim's `CPU -> GPU` worker transfer, and then
+emits:
+
+| Ordered event | Required boundary |
+|---|---|
+| `resident_claim_restore_required` | Same claim id, request id, predicate, prefix/reusable object, cache identity, token-map identity, job id, transfer type, and synthesized restoration generation. |
+| `offload_worker_transfer_finished` | `CPU -> GPU`, `success=false`, controlled failure reason, and same claim/job. |
+| `offload_load_job_failed` | Same claim/job and load direction. |
+| `resident_claim_restoration_failed` | `outcome_claim_id` equals the accepted claim id. |
+| `active_request_refused` | `blocking_claim_ids` contains that claim id. |
+
+The refusal is a controlled patched connector outcome after vLLM's existing
+`kv_load_failure_policy="fail"` marks the active request `FINISHED_ERROR`. It is
+not native scheduler admission refusal. The result supports only this claim:
+
+```text
+local patched vLLM connector mechanism satisfies the offload lifecycle/outcome
+gate under controlled failure injection.
+```
+
+The controls intentionally fail the outcome gate:
+
+| Control | Gate behavior |
+|---|---|
+| `success_path` | Passes connector observation, fails failure outcome because restore succeeds. |
+| `wrong_claim_failure` | Fails failure outcome because the injected claim id does not match the accepted claim. |
+| `unclaimed_load_failure` | Fails failure outcome and emits no claim-scoped ResidentClaim refusal. |
+| `generic_counter_only` | Fails because generic counters lack claim, predicate, cache, token-map, and outcome identity. |
+| `fallback_recompute` | Fails because request service after a failed load is not counted as satisfying the accepted claim without prior refusal/demotion/expiry/harm. |

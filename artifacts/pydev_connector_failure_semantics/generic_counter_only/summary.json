@@ -1,0 +1,74 @@
+{
+  "claim_boundary": "Local patched pydev vLLM OffloadingConnector mechanism only; not upstream ResidentClaim support and not production offload performance.",
+  "disable_log_stats_required": true,
+  "evaluation": {
+    "analyzer_runtime_ns": 19220,
+    "connector_observation_success": false,
+    "event_counts": {
+      "generic_kv_transfer_failed_counter": 1,
+      "generic_request_error_counter": 1
+    },
+    "gate_summary": {
+      "claim_boundary": "Patched pydev vLLM OffloadingConnector evidence only; this is not native upstream ResidentClaim support or production offload performance.",
+      "claim_id": null,
+      "controls": {
+        "fallback_recompute_counted_as_satisfaction": false,
+        "fallback_recompute_rejected": false,
+        "generic_counter_only_rejected": true,
+        "unclaimed_failure_rejected": false,
+        "wrong_claim_failure_rejected": true
+      },
+      "failure_missing_requirements": [
+        "claim_metadata_before_lifecycle",
+        "claim_scoped_restoration_failed",
+        "controlled_cpu_to_gpu_load_failure",
+        "fail_closed_active_request_refused",
+        "restore_required_before_failure",
+        "store_offload_to_cpu_path"
+      ],
+      "observation_missing_requirements": [
+        "claim_metadata_before_lifecycle",
+        "cpu_to_gpu_restore_success",
+        "reuse_lookup_hit_requiring_load",
+        "store_offload_to_cpu_path"
+      ],
+      "ordered_evidence": {
+        "failed_transfer": null,
+        "load_completed": null,
+        "load_created": null,
+        "load_failed": null,
+        "load_transfer_success": null,
+        "lookup_hit": null,
+        "refusal": null,
+        "request_initialized": null,
+        "restoration_failed": null,
+        "restore_required": null,
+        "restored": null,
+        "store_completed": null,
+        "store_created": null,
+        "store_transfer": null
+      },
+      "schema_version": 1
+    },
+    "restoration_failure_outcome_success": false
+  },
+  "event_bytes": 378,
+  "event_count": 2,
+  "event_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/generic_counter_only/vllm_runtime_events.jsonl",
+  "generated_at": "2026-05-22T14:19:33.234300+00:00",
+  "load_failure_to_outcome_latency_ns": null,
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "python": "/home/krooksn/ai/runtimes/vllm/envs/pydev-precompiled-cu130/bin/python",
+  "request_records": [],
+  "run_id": "pydev-connector-failure:generic_counter_only",
+  "runtime": {},
+  "scenario": "generic_counter_only",
+  "status": "ok",
+  "transfer_metrics": {
+    "directions": [],
+    "worker_transfer_count": 0,
+    "worker_transfer_sizes": [],
+    "worker_transfer_times_s": []
+  },
+  "ttft_note": "TTFT is unavailable when vLLM returns no metrics under disable_log_stats=True."
+}
