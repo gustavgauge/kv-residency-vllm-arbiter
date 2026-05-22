@@ -1,0 +1,11 @@
+{
+  "audit_python": null,
+  "blocked_reason": "ModuleNotFoundError: No module named 'vllm'",
+  "claim_boundary": "No live request-path evidence collected; vLLM and torch were not importable in the selected Python.",
+  "generated_at": "2026-05-22T12:51:55.534302+00:00",
+  "instrumentation_scope": "request_path_coupled_reference_not_native_vllm_offload",
+  "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "python": "/usr/bin/python3",
+  "status": "blocked_missing_vllm_runtime",
+  "vllm_source": null
+}

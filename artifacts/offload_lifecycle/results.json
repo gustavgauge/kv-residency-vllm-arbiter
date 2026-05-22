@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-05-22T12:28:40.400177+00:00",
+  "generated_at": "2026-05-22T12:51:55.653518+00:00",
   "iterations": 1000,
   "overhead": {
-    "positive_bundle_analyzer_runtime_ns": 40630,
+    "positive_bundle_analyzer_runtime_ns": 43370,
     "positive_bundle_event_bytes": 8600,
     "positive_bundle_events": 10,
-    "positive_bundle_mean_ns_minus_baseline_no_hook_mean_ns": 16218.1,
-    "positive_bundle_mean_ns_minus_event_emission_disabled_mean_ns": 217.8,
-    "positive_bundle_mean_ns_over_baseline_no_hook_mean_ns": 7.273,
-    "positive_bundle_mean_ns_over_event_emission_disabled_mean_ns": 1.012
+    "positive_bundle_mean_ns_minus_baseline_no_hook_mean_ns": 16624.1,
+    "positive_bundle_mean_ns_minus_event_emission_disabled_mean_ns": 793.9,
+    "positive_bundle_mean_ns_over_baseline_no_hook_mean_ns": 7.265,
+    "positive_bundle_mean_ns_over_event_emission_disabled_mean_ns": 1.043
   },
   "records": [
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 14509,
+      "analyzer_runtime_ns": 14500,
       "claim_registry_size": 0,
       "event_bytes": 0,
       "event_counts": {},
@@ -35,15 +35,15 @@
         "stable_claim_id_and_fixed_materialization_predicate"
       ],
       "scenario": "baseline_no_hook",
-      "trace_generation_latency_ns_max": 9260,
-      "trace_generation_latency_ns_mean": 2585.3,
-      "trace_generation_latency_ns_median": 2540.0,
-      "trace_generation_latency_ns_min": 2480,
-      "trace_generation_throughput_traces_per_s": 386807.54
+      "trace_generation_latency_ns_max": 22010,
+      "trace_generation_latency_ns_mean": 2653.6,
+      "trace_generation_latency_ns_median": 2520.0,
+      "trace_generation_latency_ns_min": 2450,
+      "trace_generation_throughput_traces_per_s": 376844.56
     },
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 14340,
+      "analyzer_runtime_ns": 15040,
       "claim_registry_size": 0,
       "event_bytes": 0,
       "event_counts": {},
@@ -65,15 +65,15 @@
         "stable_claim_id_and_fixed_materialization_predicate"
       ],
       "scenario": "positive_bundle",
-      "trace_generation_latency_ns_max": 40349,
-      "trace_generation_latency_ns_mean": 18585.6,
-      "trace_generation_latency_ns_median": 18430.0,
-      "trace_generation_latency_ns_min": 18040,
-      "trace_generation_throughput_traces_per_s": 53805.04
+      "trace_generation_latency_ns_max": 41240,
+      "trace_generation_latency_ns_mean": 18483.8,
+      "trace_generation_latency_ns_median": 18290.0,
+      "trace_generation_latency_ns_min": 18010,
+      "trace_generation_throughput_traces_per_s": 54101.48
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 33950,
+      "analyzer_runtime_ns": 34509,
       "claim_registry_size": 1,
       "event_bytes": 5054,
       "event_counts": {
@@ -96,15 +96,15 @@
         "restoration_failure_outcome"
       ],
       "scenario": "success_restore",
-      "trace_generation_latency_ns_max": 24440,
-      "trace_generation_latency_ns_mean": 12344.3,
-      "trace_generation_latency_ns_median": 12240.0,
-      "trace_generation_latency_ns_min": 11990,
-      "trace_generation_throughput_traces_per_s": 81009.3
+      "trace_generation_latency_ns_max": 43370,
+      "trace_generation_latency_ns_mean": 12826.5,
+      "trace_generation_latency_ns_median": 12420.0,
+      "trace_generation_latency_ns_min": 12040,
+      "trace_generation_throughput_traces_per_s": 77963.57
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 32929,
+      "analyzer_runtime_ns": 33990,
       "claim_registry_size": 1,
       "event_bytes": 5182,
       "event_counts": {
@@ -127,15 +127,15 @@
         "ordered_lifecycle_events"
       ],
       "scenario": "failure_refusal",
-      "trace_generation_latency_ns_max": 24670,
-      "trace_generation_latency_ns_mean": 12324.5,
-      "trace_generation_latency_ns_median": 12220.0,
-      "trace_generation_latency_ns_min": 11930,
-      "trace_generation_throughput_traces_per_s": 81139.05
+      "trace_generation_latency_ns_max": 27080,
+      "trace_generation_latency_ns_mean": 12863.7,
+      "trace_generation_latency_ns_median": 12310.0,
+      "trace_generation_latency_ns_min": 12050,
+      "trace_generation_throughput_traces_per_s": 77738.24
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 40630,
+      "analyzer_runtime_ns": 43370,
       "claim_registry_size": 1,
       "event_bytes": 8600,
       "event_counts": {
@@ -157,15 +157,15 @@
       "passes_reference_gate": true,
       "reference_missing_requirements": [],
       "scenario": "positive_bundle",
-      "trace_generation_latency_ns_max": 31960,
-      "trace_generation_latency_ns_mean": 18803.4,
-      "trace_generation_latency_ns_median": 18670.0,
-      "trace_generation_latency_ns_min": 18150,
-      "trace_generation_throughput_traces_per_s": 53181.74
+      "trace_generation_latency_ns_max": 40230,
+      "trace_generation_latency_ns_mean": 19277.7,
+      "trace_generation_latency_ns_median": 18780.0,
+      "trace_generation_latency_ns_min": 18460,
+      "trace_generation_throughput_traces_per_s": 51873.52
     },
     {
       "active_claim_count": 0,
-      "analyzer_runtime_ns": 16080,
+      "analyzer_runtime_ns": 16480,
       "claim_registry_size": 0,
       "event_bytes": 643,
       "event_counts": {
@@ -190,15 +190,15 @@
         "stable_claim_id_and_fixed_materialization_predicate"
       ],
       "scenario": "generic_substrate",
-      "trace_generation_latency_ns_max": 13150,
-      "trace_generation_latency_ns_mean": 5089.2,
-      "trace_generation_latency_ns_median": 5040.0,
-      "trace_generation_latency_ns_min": 4960,
-      "trace_generation_throughput_traces_per_s": 196494.85
+      "trace_generation_latency_ns_max": 16100,
+      "trace_generation_latency_ns_mean": 5027.6,
+      "trace_generation_latency_ns_median": 4970.0,
+      "trace_generation_latency_ns_min": 4850,
+      "trace_generation_throughput_traces_per_s": 198900.87
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 21499,
+      "analyzer_runtime_ns": 22310,
       "claim_registry_size": 1,
       "event_bytes": 2589,
       "event_counts": {
@@ -219,15 +219,15 @@
         "restoration_failure_outcome"
       ],
       "scenario": "claim_offload_no_restore",
-      "trace_generation_latency_ns_max": 19790,
-      "trace_generation_latency_ns_mean": 8001.8,
-      "trace_generation_latency_ns_median": 7920.0,
-      "trace_generation_latency_ns_min": 7660,
-      "trace_generation_throughput_traces_per_s": 124971.16
+      "trace_generation_latency_ns_max": 20860,
+      "trace_generation_latency_ns_mean": 7896.2,
+      "trace_generation_latency_ns_median": 7820.0,
+      "trace_generation_latency_ns_min": 7670,
+      "trace_generation_throughput_traces_per_s": 126642.67
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 27840,
+      "analyzer_runtime_ns": 28500,
       "claim_registry_size": 1,
       "event_bytes": 5054,
       "event_counts": {
@@ -251,15 +251,15 @@
         "restoration_failure_outcome"
       ],
       "scenario": "restore_after_reuse",
-      "trace_generation_latency_ns_max": 24600,
-      "trace_generation_latency_ns_mean": 12362.2,
-      "trace_generation_latency_ns_median": 12260.0,
-      "trace_generation_latency_ns_min": 11970,
-      "trace_generation_throughput_traces_per_s": 80891.87
+      "trace_generation_latency_ns_max": 36490,
+      "trace_generation_latency_ns_mean": 12465.8,
+      "trace_generation_latency_ns_median": 12300.0,
+      "trace_generation_latency_ns_min": 12030,
+      "trace_generation_throughput_traces_per_s": 80219.27
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 27520,
+      "analyzer_runtime_ns": 28310,
       "claim_registry_size": 1,
       "event_bytes": 5146,
       "event_counts": {
@@ -283,15 +283,15 @@
         "restoration_failure_outcome"
       ],
       "scenario": "wrong_claim_failure_outcome",
-      "trace_generation_latency_ns_max": 50730,
-      "trace_generation_latency_ns_mean": 13092.0,
-      "trace_generation_latency_ns_median": 12740.0,
-      "trace_generation_latency_ns_min": 12280,
-      "trace_generation_throughput_traces_per_s": 76382.3
+      "trace_generation_latency_ns_max": 47130,
+      "trace_generation_latency_ns_mean": 14262.5,
+      "trace_generation_latency_ns_median": 12660.0,
+      "trace_generation_latency_ns_min": 12290,
+      "trace_generation_throughput_traces_per_s": 70114.14
     },
     {
       "active_claim_count": 1,
-      "analyzer_runtime_ns": 28120,
+      "analyzer_runtime_ns": 28529,
       "claim_registry_size": 1,
       "event_bytes": 5063,
       "event_counts": {
@@ -315,11 +315,11 @@
         "restoration_failure_outcome"
       ],
       "scenario": "fallback_recompute",
-      "trace_generation_latency_ns_max": 24949,
-      "trace_generation_latency_ns_mean": 12515.6,
-      "trace_generation_latency_ns_median": 12400.0,
-      "trace_generation_latency_ns_min": 12150,
-      "trace_generation_throughput_traces_per_s": 79900.14
+      "trace_generation_latency_ns_max": 27910,
+      "trace_generation_latency_ns_mean": 12409.1,
+      "trace_generation_latency_ns_median": 12260.0,
+      "trace_generation_latency_ns_min": 12010,
+      "trace_generation_throughput_traces_per_s": 80586.32
     }
   ],
   "scope": "Reference lifecycle/outcome conformance witness for ResidentClaim offloadable semantics; trace-generation metrics are not serving throughput or production offload performance."

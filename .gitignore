@@ -14,5 +14,7 @@ artifacts/*
 !artifacts/.gitkeep
 !artifacts/offload_lifecycle/
 !artifacts/offload_lifecycle/**
+!artifacts/live_request_path/
+!artifacts/live_request_path/**
 vendor/
 vllm/
