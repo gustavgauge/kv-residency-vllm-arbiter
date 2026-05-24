@@ -118,6 +118,16 @@ def main() -> int:
         "targets": targets,
         "runner": args.runner,
         "vllm_source": str(args.vllm_source) if args.vllm_source is not None else None,
+        "runtime_provenance": {
+            "parent_commit": provenance.parent_commit,
+            "artifact_commit": provenance.artifact_commit,
+            "vllm_source_path": provenance.vllm_source_path,
+            "vllm_source_head": provenance.vllm_source_head,
+            "vllm_source_status_short": provenance.vllm_source_status_short,
+            "vllm_source_clean": provenance.vllm_source_clean,
+            "vllm_base_commit": provenance.vllm_base_commit,
+            "vllm_patch_commits": provenance.vllm_patch_commits,
+        },
         "runs": [],
     }
     rows = []

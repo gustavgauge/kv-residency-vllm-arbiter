@@ -80,6 +80,10 @@ class Provenance:
     vllm_base_commit: str | None
     vllm_patch_commits: list[dict[str, str]]
     runner_path: str | None
+    vllm_source_path: str | None = None
+    vllm_source_head: str | None = None
+    vllm_source_status_short: str | None = None
+    vllm_source_clean: bool | None = None
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -107,7 +111,14 @@ def collect_provenance(
 ) -> Provenance:
     patch_commits: list[dict[str, str]] = []
     vllm_base_commit = None
+    vllm_source_path = str(vllm_source) if vllm_source is not None else None
+    vllm_source_head = None
+    vllm_source_status_short = None
+    vllm_source_clean = None
     if vllm_source is not None:
+        vllm_source_head = git_output(vllm_source, "rev-parse", "HEAD")
+        vllm_source_status_short = git_output(vllm_source, "status", "--short")
+        vllm_source_clean = vllm_source_status_short == ""
         vllm_base_commit = git_output(
             vllm_source,
             "merge-base",
@@ -142,6 +153,10 @@ def collect_provenance(
         vllm_base_commit=vllm_base_commit,
         vllm_patch_commits=patch_commits,
         runner_path=runner_path,
+        vllm_source_path=vllm_source_path,
+        vllm_source_head=vllm_source_head,
+        vllm_source_status_short=vllm_source_status_short,
+        vllm_source_clean=vllm_source_clean,
     )
 
 
@@ -194,6 +209,14 @@ def normalize_summary(
         "run_set_id": run_set_id or _infer_run_set_id(summary_path),
         "parent_commit": provenance.parent_commit,
         "artifact_commit": provenance.artifact_commit,
+        "vllm_source_path": provenance.vllm_source_path,
+        "vllm_source_head": provenance.vllm_source_head,
+        "vllm_source_status_short": provenance.vllm_source_status_short,
+        "vllm_source_clean": provenance.vllm_source_clean,
+        "vllm_import_path_matches_source": _path_is_under(
+            raw.get("runtime", {}).get("vllm_file"),
+            provenance.vllm_source_path,
+        ),
         "vllm_base_commit": provenance.vllm_base_commit,
         "vllm_patch_commits": provenance.vllm_patch_commits,
         **_patch_commit_aliases(provenance.vllm_patch_commits),
@@ -298,6 +321,17 @@ def _patch_commit_aliases(
         elif "scheduler boundary" in subject:
             aliases["vllm_scheduler_boundary_patch_commit"] = commit
     return aliases
+
+
+def _path_is_under(child: str | None, parent: str | None) -> bool | None:
+    if not child or not parent:
+        return None
+    try:
+        child_path = Path(child).resolve()
+        parent_path = Path(parent).resolve()
+        return child_path == parent_path or child_path.is_relative_to(parent_path)
+    except OSError:
+        return str(child).startswith(str(parent))
 
 
 def aggregate_normalized(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:

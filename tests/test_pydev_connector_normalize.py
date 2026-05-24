@@ -147,7 +147,10 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
                 "run_id": "run:rep-001",
                 "model": "unit-model",
                 "python": "/unit/python",
-                "runtime": {"device0": "unit-gpu"},
+                "runtime": {
+                    "device0": "unit-gpu",
+                    "vllm_file": str(tmp_path / "vllm" / "__init__.py"),
+                },
                 "event_path": str(event_path),
                 "event_count": len(events),
                 "event_bytes": event_path.stat().st_size,
@@ -193,6 +196,10 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
                 },
             ],
             runner_path="/runner",
+            vllm_source_path=str(tmp_path),
+            vllm_source_head="vllm-head",
+            vllm_source_status_short="",
+            vllm_source_clean=True,
         ),
         repetition_id="rep-001",
         run_set_id="unit",
@@ -216,6 +223,10 @@ def test_normalized_summary_records_required_audit_fields(tmp_path: Path) -> Non
     assert normalized["vllm_failure_semantics_patch_commit"] == "patch-failure"
     assert normalized["vllm_scheduler_boundary_patch_commit"] == "patch-scheduler"
     assert normalized["vllm_patch_stack_head"] == "patch-scheduler"
+    assert normalized["vllm_source_head"] == "vllm-head"
+    assert normalized["vllm_source_status_short"] == ""
+    assert normalized["vllm_source_clean"]
+    assert normalized["vllm_import_path_matches_source"]
     assert normalized["transfer_bytes_total"] == 64
     assert normalized["failure_to_outcome_latency_ns"] == 2_000
     assert (
