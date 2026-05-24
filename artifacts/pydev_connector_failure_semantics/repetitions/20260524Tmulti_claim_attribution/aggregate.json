@@ -4,17 +4,17 @@
     "multi_claim_targeted_failure": {
       "analyzer_runtime_ns": {
         "count": 3,
-        "max": 193220.0,
-        "median": 191189.0,
-        "min": 178470.0,
-        "p95": 193220.0
+        "max": 171470.0,
+        "median": 168610.0,
+        "min": 165200.0,
+        "p95": 171470.0
       },
       "event_bytes": {
         "count": 3,
-        "max": 53206.0,
-        "median": 53206.0,
-        "min": 53205.0,
-        "p95": 53206.0
+        "max": 46620.0,
+        "median": 46619.0,
+        "min": 46617.0,
+        "p95": 46620.0
       },
       "event_sequence_valid_rate": {
         "passed": 3,
@@ -28,10 +28,10 @@
       },
       "failure_to_outcome_latency_ns": {
         "count": 3,
-        "max": 171859.0,
-        "median": 157300.0,
-        "min": 145660.0,
-        "p95": 171859.0
+        "max": 144809.0,
+        "median": 143790.0,
+        "min": 143420.0,
+        "p95": 144809.0
       },
       "final_request_outcomes": {
         "active_request_refused": 3
@@ -50,10 +50,10 @@
       },
       "restoration_failed_to_active_request_refused_latency_ns": {
         "count": 3,
-        "max": 82339.0,
-        "median": 80020.0,
-        "min": 74140.0,
-        "p95": 82339.0
+        "max": 74760.0,
+        "median": 74560.0,
+        "min": 73850.0,
+        "p95": 74760.0
       },
       "reuse_cached_tokens": {
         "count": 0,

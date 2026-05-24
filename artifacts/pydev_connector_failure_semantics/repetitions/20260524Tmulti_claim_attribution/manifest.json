@@ -1,12 +1,12 @@
 {
   "aggregate_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/aggregate.json",
   "completed_normalized_runs": 3,
-  "generated_at": "2026-05-24T21:42:53.064685+00:00",
+  "generated_at": "2026-05-24T22:00:43.939071+00:00",
   "run_set_id": "20260524Tmulti_claim_attribution",
   "runner": "/home/krooksn/ai/bin/vllm-pydev-python",
   "runs": [
     {
-      "elapsed_s": 12.274945,
+      "elapsed_s": 12.325055,
       "event_sequence_valid": true,
       "failure_outcome_gate_result": true,
       "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-001/run.log",
@@ -18,7 +18,7 @@
       "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-001/multi_claim_targeted_failure/summary.json"
     },
     {
-      "elapsed_s": 12.234948,
+      "elapsed_s": 11.991288,
       "event_sequence_valid": true,
       "failure_outcome_gate_result": true,
       "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-002/run.log",
@@ -30,7 +30,7 @@
       "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-002/multi_claim_targeted_failure/summary.json"
     },
     {
-      "elapsed_s": 12.378713,
+      "elapsed_s": 12.029548,
       "event_sequence_valid": true,
       "failure_outcome_gate_result": true,
       "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-003/run.log",
@@ -42,6 +42,29 @@
       "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-003/multi_claim_targeted_failure/summary.json"
     }
   ],
+  "runtime_provenance": {
+    "artifact_commit": "26d53f9dbc571dd942be7ea6885bbb8f4aca0a42",
+    "parent_commit": "be83bdd979f2ae682a9c18597ca1864f88f63f9e",
+    "vllm_base_commit": "9b9d5dbaab852a1c615fe83a7f92881d353503db",
+    "vllm_patch_commits": [
+      {
+        "commit": "8d36813872db685823242be68bc907b5c6faade2",
+        "subject": "Add ResidentClaim connector telemetry probe"
+      },
+      {
+        "commit": "52eaee2107faa122a8997b79ea8144c363028edb",
+        "subject": "Add ResidentClaim load failure semantics probe"
+      },
+      {
+        "commit": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+        "subject": "Add ResidentClaim scheduler boundary telemetry probe"
+      }
+    ],
+    "vllm_source_clean": true,
+    "vllm_source_head": "0b129d97135c1f01cc907008b7c93ad65256ea64",
+    "vllm_source_path": "/home/krooksn/ai/runtimes/vllm/repo",
+    "vllm_source_status_short": ""
+  },
   "schema_version": 1,
   "targets": {
     "multi_claim_targeted_failure": 3

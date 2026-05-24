@@ -14,10 +14,10 @@ Failure missing: `-`
 
 | Role | Status | Latency s | Cached tokens | Output tokens | Exception |
 |---|---|---:|---:|---:|---|
-| control_resident | served | 0.200476 | 0 | 8 | - |
-| control_reuse | served | 0.101531 | 448 | 8 | - |
-| target_resident | served | 0.095256 | 0 | 8 | - |
-| target_reuse | controlled_refused | 0.003005 | 0 | 0 | - |
+| control_resident | served | 0.176694 | 0 | 8 | - |
+| control_reuse | served | 0.089147 | 448 | 8 | - |
+| target_resident | served | 0.087323 | 0 | 8 | - |
+| target_reuse | controlled_refused | 0.00272 | 0 | 0 | - |
 
 Multi-claim attribution gate: `pass`
 
