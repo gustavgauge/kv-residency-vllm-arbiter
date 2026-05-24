@@ -1,7 +1,13 @@
-from kv_vllm_arbiter.pydev_connector_failure import evaluate_pydev_connector_events
+from copy import deepcopy
+
+from kv_vllm_arbiter.pydev_connector_failure import (
+    evaluate_multi_claim_attribution_events,
+    evaluate_pydev_connector_events,
+)
 
 
 CLAIM = "claim:test"
+CONTROL_CLAIM = "claim:control"
 
 
 def base_success_events() -> list[dict]:
@@ -156,6 +162,36 @@ def failure_tail(
     return events
 
 
+def relabel_events(
+    events: list[dict],
+    *,
+    claim_id: str,
+    sequence_offset: int = 0,
+    object_suffix: str = "shared",
+) -> list[dict]:
+    relabeled = []
+    for event in events:
+        row = deepcopy(event)
+        row["event_sequence"] = int(row["event_sequence"]) + sequence_offset
+        for key in ("claim_id", "resident_claim_id", "outcome_claim_id"):
+            if row.get(key):
+                row[key] = claim_id
+        if isinstance(row.get("blocking_claim_ids"), list):
+            row["blocking_claim_ids"] = [
+                claim_id if item == CLAIM else item
+                for item in row["blocking_claim_ids"]
+            ]
+        row.setdefault("resident_claim_id", claim_id)
+        row.setdefault("predicate_id", "predicate:leading-prefix")
+        row.setdefault("materialization_predicate", "leading_prefix_at_least(1)")
+        row.setdefault("prefix_id", f"prefix:{object_suffix}")
+        row.setdefault("reusable_object_id", f"object:{object_suffix}")
+        row.setdefault("cache_identity", "cache:shared")
+        row.setdefault("request_token_map_id", f"token-map:{object_suffix}")
+        relabeled.append(row)
+    return relabeled
+
+
 def test_success_path_classifies_connector_observation() -> None:
     result = evaluate_pydev_connector_events(base_success_events())
 
@@ -220,3 +256,85 @@ def test_fallback_recompute_without_refusal_is_rejected() -> None:
 
     assert not result.restoration_failure_outcome_success
     assert result.gate_summary["controls"]["fallback_recompute_rejected"]
+
+
+def test_multi_claim_attribution_names_only_target_claim() -> None:
+    target_events = relabel_events(
+        base_success_events()[:7] + failure_tail(),
+        claim_id=CLAIM,
+        object_suffix="overlap-target",
+    )
+    control_events = relabel_events(
+        base_success_events(),
+        claim_id=CONTROL_CLAIM,
+        sequence_offset=100,
+        object_suffix="overlap-control",
+    )
+
+    result = evaluate_multi_claim_attribution_events(
+        target_events + control_events,
+        target_claim_id=CLAIM,
+        non_target_claim_ids=[CONTROL_CLAIM],
+    )
+
+    assert result.attribution_success
+    assert result.gate_summary["target_failure_outcome_gate"]
+    assert result.gate_summary["scheduler_events_only_target"]
+    assert result.gate_summary["blocking_claim_ids_only_target"]
+    assert result.gate_summary["non_targets_restored_or_not_failed"]
+    assert not result.gate_summary["non_target_failure_or_refusal_attribution"]
+
+
+def test_multi_claim_attribution_rejects_blocking_claim_smear() -> None:
+    target_events = relabel_events(
+        base_success_events()[:7] + failure_tail(),
+        claim_id=CLAIM,
+        object_suffix="overlap-target",
+    )
+    for event in target_events:
+        if event.get("event") == "scheduler_active_request_refused":
+            event["blocking_claim_ids"] = [CLAIM, CONTROL_CLAIM]
+    control_events = relabel_events(
+        base_success_events(),
+        claim_id=CONTROL_CLAIM,
+        sequence_offset=100,
+        object_suffix="overlap-control",
+    )
+
+    result = evaluate_multi_claim_attribution_events(
+        target_events + control_events,
+        target_claim_id=CLAIM,
+        non_target_claim_ids=[CONTROL_CLAIM],
+    )
+
+    assert not result.attribution_success
+    assert "blocking_claim_ids_name_only_target" in result.gate_summary[
+        "missing_requirements"
+    ]
+
+
+def test_ambiguous_claim_cache_identity_fails_closed() -> None:
+    events = relabel_events(
+        base_success_events()[:7] + failure_tail(),
+        claim_id=CLAIM,
+        object_suffix="first-object",
+    )
+    events.extend(
+        relabel_events(
+            base_success_events(),
+            claim_id=CLAIM,
+            sequence_offset=100,
+            object_suffix="second-object",
+        )
+    )
+
+    result = evaluate_pydev_connector_events(events, expected_claim_id=CLAIM)
+
+    assert not result.restoration_failure_outcome_success
+    assert "ambiguous_claim_cache_identity" in result.gate_summary[
+        "failure_missing_requirements"
+    ]
+    assert result.gate_summary["claim_identity_ambiguities"]["prefix_id"] == [
+        "prefix:first-object",
+        "prefix:second-object",
+    ]

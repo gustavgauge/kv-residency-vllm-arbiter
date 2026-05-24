@@ -1,0 +1,90 @@
+{
+  "runs": 3,
+  "scenarios": {
+    "multi_claim_targeted_failure": {
+      "analyzer_runtime_ns": {
+        "count": 3,
+        "max": 193220.0,
+        "median": 191189.0,
+        "min": 178470.0,
+        "p95": 193220.0
+      },
+      "event_bytes": {
+        "count": 3,
+        "max": 53206.0,
+        "median": 53206.0,
+        "min": 53205.0,
+        "p95": 53206.0
+      },
+      "event_sequence_valid_rate": {
+        "passed": 3,
+        "rate": 1.0,
+        "total": 3
+      },
+      "failure_outcome_gate_pass_rate": {
+        "passed": 3,
+        "rate": 1.0,
+        "total": 3
+      },
+      "failure_to_outcome_latency_ns": {
+        "count": 3,
+        "max": 171859.0,
+        "median": 157300.0,
+        "min": 145660.0,
+        "p95": 171859.0
+      },
+      "final_request_outcomes": {
+        "active_request_refused": 3
+      },
+      "observation_gate_pass_rate": {
+        "passed": 0,
+        "rate": 0.0,
+        "total": 3
+      },
+      "resident_wall_time_s": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "restoration_failed_to_active_request_refused_latency_ns": {
+        "count": 3,
+        "max": 82339.0,
+        "median": 80020.0,
+        "min": 74140.0,
+        "p95": 82339.0
+      },
+      "reuse_cached_tokens": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "reuse_wall_time_s": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p95": null
+      },
+      "runs": 3,
+      "transfer_bytes_total": {
+        "count": 3,
+        "max": 41287680.0,
+        "median": 41287680.0,
+        "min": 41287680.0,
+        "p95": 41287680.0
+      },
+      "worker_transfer_count": {
+        "count": 3,
+        "max": 4.0,
+        "median": 4.0,
+        "min": 4.0,
+        "p95": 4.0
+      }
+    }
+  },
+  "schema_version": 1
+}

@@ -22,6 +22,7 @@ if str(ROOT / "src") not in sys.path:
 
 from kv_vllm_arbiter.offload_lifecycle import write_jsonl  # noqa: E402
 from kv_vllm_arbiter.pydev_connector_failure import (  # noqa: E402
+    evaluate_multi_claim_attribution_events,
     evaluate_pydev_connector_events,
     load_jsonl,
     write_json,
@@ -55,6 +56,7 @@ class Scenario:
     allow_unclaimed_failure: bool = False
     kv_load_failure_policy: str = "fail"
     synthetic_generic: bool = False
+    multi_claim: bool = False
 
 
 SCENARIOS = {
@@ -107,6 +109,14 @@ SCENARIOS = {
         claim_params=False,
         event_path=True,
         synthetic_generic=True,
+    ),
+    "multi_claim_targeted_failure": Scenario(
+        name="multi_claim_targeted_failure",
+        claim_params=True,
+        event_path=True,
+        inject_failure=True,
+        failure_target="target_claim",
+        multi_claim=True,
     ),
 }
 
@@ -188,8 +198,8 @@ def runtime_payload() -> dict[str, Any]:
     }
 
 
-def claim_id(run_id: str) -> str:
-    return f"{run_id}:claim:live-request-path"
+def claim_id(run_id: str, claim_label: str = "live-request-path") -> str:
+    return f"{run_id}:claim:{claim_label}"
 
 
 def prompts() -> dict[str, str]:
@@ -199,18 +209,40 @@ def prompts() -> dict[str, str]:
     }
 
 
-def resident_claim_params(role: str, run_id: str) -> dict[str, Any]:
+def multi_claim_prompts(claim_label: str) -> dict[str, str]:
+    label = claim_label.replace("_", " ")
+    prefix = (
+        f"Resident KV multi-claim {label}. Preserve this separate context. "
+        + SHARED_PREFIX
+    )
+    return {
+        "resident": prefix + "\nResident turn: answer with a short sentence.",
+        "reuse": prefix + "\nReuse turn: answer with a different short sentence.",
+    }
+
+
+def resident_claim_params(
+    role: str,
+    run_id: str,
+    *,
+    claim_label: str = "live-request-path",
+    claim_id_override: str | None = None,
+) -> dict[str, Any]:
     digest = hashlib.sha256(SHARED_PREFIX.encode("utf-8")).hexdigest()[:16]
+    if claim_label == "live-request-path":
+        identity_suffix = digest
+    else:
+        identity_suffix = f"{digest}:{claim_label}"
     return {
         "resident_claim": True,
-        "resident_claim_id": claim_id(run_id),
+        "resident_claim_id": claim_id_override or claim_id(run_id, claim_label),
         "resident_claim_role": role,
         "predicate_id": "predicate:live-leading-prefix",
         "materialization_predicate": "leading_prefix_at_least(1)",
-        "prefix_id": f"prefix:shared:{digest}",
-        "reusable_object_id": f"vllm-request-prefix:{digest}",
+        "prefix_id": f"prefix:shared:{identity_suffix}",
+        "reusable_object_id": f"vllm-request-prefix:{identity_suffix}",
         "cache_identity": "vllm-live-request-path-cache:v1",
-        "request_token_map_id": f"token-map:shared-prefix:{digest}",
+        "request_token_map_id": f"token-map:shared-prefix:{identity_suffix}",
         "instrumentation_scope": (
             "native_vllm_offloading_connector_failure_probe_not_conformance"
         ),
@@ -225,11 +257,18 @@ def sampling_params(
     args: argparse.Namespace,
     scenario: Scenario,
     run_id: str,
+    claim_label: str = "live-request-path",
+    claim_id_override: str | None = None,
 ) -> Any:
     extra_args = None
     if scenario.claim_params:
         extra_args = {
-            "kv_transfer_params": resident_claim_params(role, run_id),
+            "kv_transfer_params": resident_claim_params(
+                role,
+                run_id,
+                claim_label=claim_label,
+                claim_id_override=claim_id_override,
+            ),
         }
     return SamplingParams(
         temperature=0,
@@ -255,7 +294,7 @@ def configure_env(scenario: Scenario, event_path: Path, run_id: str) -> None:
         os.environ.pop(key, None)
     if scenario.event_path:
         os.environ["VLLM_RESIDENT_CLAIM_EVENT_PATH"] = str(event_path)
-    if scenario.inject_failure:
+    if scenario.inject_failure and not scenario.multi_claim:
         os.environ["VLLM_RESIDENT_CLAIM_INJECT_LOAD_FAILURE"] = "1"
         os.environ["VLLM_RESIDENT_CLAIM_FAILURE_MODE"] = "refusal"
         os.environ["VLLM_RESIDENT_CLAIM_FAILURE_REASON"] = (
@@ -263,6 +302,11 @@ def configure_env(scenario: Scenario, event_path: Path, run_id: str) -> None:
         )
         if scenario.failure_target == "same_claim":
             os.environ["VLLM_RESIDENT_CLAIM_FAILURE_CLAIM_ID"] = claim_id(run_id)
+        elif scenario.failure_target == "target_claim":
+            os.environ["VLLM_RESIDENT_CLAIM_FAILURE_CLAIM_ID"] = claim_id(
+                run_id,
+                "target",
+            )
         elif scenario.failure_target == "wrong_claim":
             os.environ["VLLM_RESIDENT_CLAIM_FAILURE_CLAIM_ID"] = (
                 f"{claim_id(run_id)}:wrong"
@@ -293,6 +337,8 @@ def run_one_request(
     args: argparse.Namespace,
     scenario: Scenario,
     run_id: str,
+    claim_label: str = "live-request-path",
+    claim_id_override: str | None = None,
 ) -> dict[str, Any]:
     started = time.perf_counter()
     try:
@@ -305,6 +351,8 @@ def run_one_request(
                 args=args,
                 scenario=scenario,
                 run_id=run_id,
+                claim_label=claim_label,
+                claim_id_override=claim_id_override,
             ),
             use_tqdm=False,
         )[0]
@@ -361,6 +409,15 @@ def run_vllm_scenario(
         llm_kwargs["kv_cache_memory_bytes"] = args.kv_cache_memory_bytes
 
     llm = LLM(**llm_kwargs)
+    if scenario.multi_claim:
+        return run_vllm_multi_claim_scenario(
+            llm,
+            SamplingParams,
+            args=args,
+            scenario=scenario,
+            run_id=run_id,
+        ), runtime_payload()
+
     prompt_map = prompts()
     records = [
         run_one_request(
@@ -387,6 +444,97 @@ def run_vllm_scenario(
             )
         )
     return records, runtime_payload()
+
+
+def run_vllm_multi_claim_scenario(
+    llm: Any,
+    SamplingParams: Any,
+    *,
+    args: argparse.Namespace,
+    scenario: Scenario,
+    run_id: str,
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+
+    control_prompts = multi_claim_prompts("control")
+    records.append(
+        run_one_request(
+            llm,
+            SamplingParams,
+            role="control_resident",
+            prompt=control_prompts["resident"],
+            args=args,
+            scenario=scenario,
+            run_id=run_id,
+            claim_label="control",
+        )
+    )
+    if records[-1]["status"] == "served":
+        llm.reset_prefix_cache(reset_running_requests=False, reset_connector=False)
+        records.append(
+            run_one_request(
+                llm,
+                SamplingParams,
+                role="control_reuse",
+                prompt=control_prompts["reuse"],
+                args=args,
+                scenario=scenario,
+                run_id=run_id,
+                claim_label="control",
+            )
+        )
+
+    target_prompts = multi_claim_prompts("target")
+    _clear_failure_env()
+    records.append(
+        run_one_request(
+            llm,
+            SamplingParams,
+            role="target_resident",
+            prompt=target_prompts["resident"],
+            args=args,
+            scenario=scenario,
+            run_id=run_id,
+            claim_label="target",
+        )
+    )
+    if records[-1]["status"] == "served":
+        llm.reset_prefix_cache(reset_running_requests=False, reset_connector=False)
+        _arm_target_claim_failure(run_id)
+        records.append(
+            run_one_request(
+                llm,
+                SamplingParams,
+                role="target_reuse",
+                prompt=target_prompts["reuse"],
+                args=args,
+                scenario=scenario,
+                run_id=run_id,
+                claim_label="target",
+            )
+        )
+    _clear_failure_env()
+    return records
+
+
+def _clear_failure_env() -> None:
+    for key in (
+        "VLLM_RESIDENT_CLAIM_INJECT_LOAD_FAILURE",
+        "VLLM_RESIDENT_CLAIM_FAILURE_CLAIM_ID",
+        "VLLM_RESIDENT_CLAIM_FAILURE_ALLOW_UNCLAIMED",
+        "VLLM_RESIDENT_CLAIM_FAILURE_MODE",
+        "VLLM_RESIDENT_CLAIM_FAILURE_REASON",
+    ):
+        os.environ.pop(key, None)
+
+
+def _arm_target_claim_failure(run_id: str) -> None:
+    os.environ["VLLM_RESIDENT_CLAIM_INJECT_LOAD_FAILURE"] = "1"
+    os.environ["VLLM_RESIDENT_CLAIM_FAILURE_MODE"] = "refusal"
+    os.environ["VLLM_RESIDENT_CLAIM_FAILURE_REASON"] = (
+        "controlled_resident_claim_cpu_to_gpu_load_failure"
+    )
+    os.environ["VLLM_RESIDENT_CLAIM_FAILURE_CLAIM_ID"] = claim_id(run_id, "target")
 
 
 def synthetic_generic_events(run_id: str) -> list[dict[str, Any]]:
@@ -479,6 +627,18 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"{record['wall_latency_s']} | {record['num_cached_tokens']} | "
             f"{record['num_output_tokens']} | {record['exception'] or '-'} |"
         )
+    if payload.get("multi_claim_attribution") is not None:
+        multi = payload["multi_claim_attribution"]["gate_summary"]
+        lines.extend(
+            [
+                "",
+                "Multi-claim attribution gate: "
+                f"`{'pass' if payload['multi_claim_attribution']['attribution_success'] else 'fail'}`",
+                "",
+                "Multi-claim missing: "
+                f"`{', '.join(multi['missing_requirements']) or '-'}`",
+            ]
+        )
     lines.append("")
     return "\n".join(lines)
 
@@ -491,14 +651,22 @@ def annotate_request_records(
     controls = evaluation_record["gate_summary"]["controls"]
     refused = evidence.get("refusal") is not None
     restoration_failed = evidence.get("restoration_failed") is not None
+    scheduler_refusal = evidence.get("scheduler_refusal") or {}
     generic_failed = (
         evidence.get("load_failed") is not None and not restoration_failed
     ) or bool(controls.get("unclaimed_failure_rejected"))
     annotated = [dict(record) for record in records]
     for record in annotated:
-        if record.get("role") != "reuse":
+        if record.get("role") not in {"reuse", "target_reuse"}:
             continue
-        if refused:
+        expected_claim = None
+        if record.get("role") == "target_reuse":
+            expected_claim = scheduler_refusal.get("claim_id")
+        if refused and (
+            record.get("role") == "reuse"
+            or expected_claim is None
+            or scheduler_refusal.get("claim_id") == expected_claim
+        ):
             record["status"] = "controlled_refused"
             record["connector_outcome"] = "active_request_refused"
         elif restoration_failed and record.get("status") == "served":
@@ -555,11 +723,20 @@ def main() -> int:
         events = load_jsonl(event_path)
 
     expected_claim = claim_id(run_id) if scenario.claim_params else None
+    if scenario.multi_claim:
+        expected_claim = claim_id(run_id, "target")
     evaluation = evaluate_pydev_connector_events(
         events,
         expected_claim_id=expected_claim,
     )
     evaluation_record = evaluation.to_record()
+    multi_claim_attribution = None
+    if scenario.multi_claim:
+        multi_claim_attribution = evaluate_multi_claim_attribution_events(
+            events,
+            target_claim_id=claim_id(run_id, "target"),
+            non_target_claim_ids=[claim_id(run_id, "control")],
+        ).to_record()
     request_records = annotate_request_records(request_records, evaluation_record)
     payload = {
         "generated_at": datetime.now(UTC).isoformat(),
@@ -584,6 +761,7 @@ def main() -> int:
         "event_bytes": event_path.stat().st_size if event_path.exists() else 0,
         "request_records": request_records,
         "evaluation": evaluation_record,
+        "multi_claim_attribution": multi_claim_attribution,
         "transfer_metrics": transfer_metrics(events),
         "load_failure_to_outcome_latency_ns": load_failure_to_outcome_latency_ns(
             events

@@ -1,0 +1,50 @@
+{
+  "aggregate_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/aggregate.json",
+  "completed_normalized_runs": 3,
+  "generated_at": "2026-05-24T21:42:53.064685+00:00",
+  "run_set_id": "20260524Tmulti_claim_attribution",
+  "runner": "/home/krooksn/ai/bin/vllm-pydev-python",
+  "runs": [
+    {
+      "elapsed_s": 12.274945,
+      "event_sequence_valid": true,
+      "failure_outcome_gate_result": true,
+      "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-001/run.log",
+      "observation_gate_result": false,
+      "repetition_id": "rep-001",
+      "returncode": 0,
+      "run_id": "pydev-connector-failure:multi_claim_targeted_failure:rep-001",
+      "scenario": "multi_claim_targeted_failure",
+      "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-001/multi_claim_targeted_failure/summary.json"
+    },
+    {
+      "elapsed_s": 12.234948,
+      "event_sequence_valid": true,
+      "failure_outcome_gate_result": true,
+      "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-002/run.log",
+      "observation_gate_result": false,
+      "repetition_id": "rep-002",
+      "returncode": 0,
+      "run_id": "pydev-connector-failure:multi_claim_targeted_failure:rep-002",
+      "scenario": "multi_claim_targeted_failure",
+      "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-002/multi_claim_targeted_failure/summary.json"
+    },
+    {
+      "elapsed_s": 12.378713,
+      "event_sequence_valid": true,
+      "failure_outcome_gate_result": true,
+      "log_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-003/run.log",
+      "observation_gate_result": false,
+      "repetition_id": "rep-003",
+      "returncode": 0,
+      "run_id": "pydev-connector-failure:multi_claim_targeted_failure:rep-003",
+      "scenario": "multi_claim_targeted_failure",
+      "summary_path": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/multi_claim_targeted_failure/rep-003/multi_claim_targeted_failure/summary.json"
+    }
+  ],
+  "schema_version": 1,
+  "targets": {
+    "multi_claim_targeted_failure": 3
+  },
+  "vllm_source": "/home/krooksn/ai/runtimes/vllm/repo"
+}

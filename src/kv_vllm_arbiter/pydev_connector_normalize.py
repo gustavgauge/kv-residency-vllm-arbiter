@@ -514,6 +514,9 @@ def _expected_event_sequence_valid(raw: dict[str, Any]) -> bool:
         return not observation and not failure and bool(
             controls.get("generic_counter_only_rejected")
         )
+    if scenario == "multi_claim_targeted_failure":
+        multi = raw.get("multi_claim_attribution", {})
+        return failure and bool(multi.get("attribution_success"))
     if scenario == "ordinary_offload_no_claim":
         return (
             event_count > 0

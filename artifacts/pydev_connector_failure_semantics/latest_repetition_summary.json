@@ -1,7 +1,7 @@
 {
-  "aggregate": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/aggregate.json",
-  "manifest": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/manifest.json",
-  "normalized_summaries": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary/normalized_summaries.jsonl",
-  "run_root": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260522Tresident_claim_scheduler_boundary",
-  "run_set_id": "20260522Tresident_claim_scheduler_boundary"
+  "aggregate": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/aggregate.json",
+  "manifest": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/manifest.json",
+  "normalized_summaries": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution/normalized_summaries.jsonl",
+  "run_root": "/home/krooksn/ai/research/projects/resident-kv-research-paper2-lowering/artifacts/kv-residency-vllm-arbiter/artifacts/pydev_connector_failure_semantics/repetitions/20260524Tmulti_claim_attribution",
+  "run_set_id": "20260524Tmulti_claim_attribution"
 }

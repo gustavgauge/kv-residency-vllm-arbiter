@@ -38,6 +38,25 @@ class PydevConnectorEvaluation:
         }
 
 
+@dataclass(frozen=True)
+class MultiClaimAttributionEvaluation:
+    gate_summary: dict[str, Any]
+    event_counts: dict[str, int]
+    analyzer_runtime_ns: int
+
+    @property
+    def attribution_success(self) -> bool:
+        return not self.gate_summary["missing_requirements"]
+
+    def to_record(self) -> dict[str, Any]:
+        return {
+            "gate_summary": self.gate_summary,
+            "event_counts": self.event_counts,
+            "analyzer_runtime_ns": self.analyzer_runtime_ns,
+            "attribution_success": self.attribution_success,
+        }
+
+
 def load_jsonl(path: Path) -> list[Event]:
     if not path.exists():
         return []
@@ -58,6 +77,7 @@ def evaluate_pydev_connector_events(
         for event in event_list
         if claim_id is not None and _event_claim_id(event) == claim_id
     ]
+    identity_ambiguities = _claim_identity_ambiguities(claim_events)
 
     request_initialized = _first_event(claim_events, "request_initialized")
     store_created = _first_event(claim_events, "offload_store_job_created")
@@ -197,6 +217,8 @@ def evaluate_pydev_connector_events(
     observation_missing = []
     if request_initialized is None:
         observation_missing.append("claim_metadata_before_lifecycle")
+    if identity_ambiguities:
+        observation_missing.append("ambiguous_claim_cache_identity")
     if store_created is None or store_transfer is None or store_completed is None:
         observation_missing.append("store_offload_to_cpu_path")
     if lookup_hit is None or load_created is None:
@@ -211,6 +233,8 @@ def evaluate_pydev_connector_events(
     failure_missing = []
     if request_initialized is None:
         failure_missing.append("claim_metadata_before_lifecycle")
+    if identity_ambiguities:
+        failure_missing.append("ambiguous_claim_cache_identity")
     if store_created is None or store_transfer is None:
         failure_missing.append("store_offload_to_cpu_path")
     if lookup_hit is None or restore_required is None or load_created is None:
@@ -298,6 +322,7 @@ def evaluate_pydev_connector_events(
             key="blocking_claim_ids",
         )
         or [],
+        "claim_identity_ambiguities": identity_ambiguities,
         "ordered_evidence": {
             "request_initialized": _compact(request_initialized),
             "store_created": _compact(store_created),
@@ -332,6 +357,164 @@ def evaluate_pydev_connector_events(
     )
 
 
+def evaluate_multi_claim_attribution_events(
+    events: Iterable[Event],
+    *,
+    target_claim_id: str,
+    non_target_claim_ids: Iterable[str],
+) -> MultiClaimAttributionEvaluation:
+    """Check that scheduler-boundary failure/refusal attribution names one claim.
+
+    This is an attribution control for traces that contain at least two accepted
+    ResidentClaim-shaped identities. It intentionally does not widen the
+    offloadability claim: a pass only means the trace does not smear the target
+    restoration failure onto nearby non-target claims.
+    """
+
+    start = time.perf_counter_ns()
+    event_list = sorted((dict(event) for event in events), key=_event_order)
+    counts = event_counts(event_list)
+    non_targets = sorted({str(claim_id) for claim_id in non_target_claim_ids})
+    target = str(target_claim_id)
+
+    target_eval = evaluate_pydev_connector_events(
+        event_list,
+        expected_claim_id=target,
+    )
+    non_target_evaluations = {
+        claim_id: evaluate_pydev_connector_events(
+            event_list,
+            expected_claim_id=claim_id,
+        ).to_record()
+        for claim_id in non_targets
+    }
+
+    scheduler_failure_events = [
+        event
+        for event in event_list
+        if event.get("event")
+        in {
+            "scheduler_resident_claim_restoration_failed",
+            "scheduler_active_request_refused",
+        }
+    ]
+    target_scheduler_failures = [
+        event
+        for event in scheduler_failure_events
+        if _event_claim_id(event) == target
+        and event.get("outcome_claim_id") == target
+    ]
+    target_scheduler_restoration_failed = [
+        event
+        for event in target_scheduler_failures
+        if event.get("event") == "scheduler_resident_claim_restoration_failed"
+    ]
+    target_scheduler_refusals = [
+        event
+        for event in target_scheduler_failures
+        if event.get("event") == "scheduler_active_request_refused"
+    ]
+    scheduler_events_only_target = bool(scheduler_failure_events) and all(
+        _event_claim_id(event) == target
+        and event.get("outcome_claim_id") == target
+        for event in scheduler_failure_events
+    )
+    blocking_claim_ids_only_target = bool(scheduler_failure_events) and all(
+        _blocking_claim_ids(event) == [target] for event in scheduler_failure_events
+    )
+
+    non_target_failure_events = [
+        event
+        for event in event_list
+        if _event_claim_id(event) in set(non_targets)
+        and event.get("event")
+        in {
+            "scheduler_resident_claim_restoration_failed",
+            "scheduler_active_request_refused",
+            "resident_claim_restoration_failed",
+            "active_request_refused",
+        }
+    ]
+    non_target_claim_status = {
+        claim_id: {
+            "observation_success": bool(
+                non_target_evaluations[claim_id]["connector_observation_success"]
+            ),
+            "failure_outcome_success": bool(
+                non_target_evaluations[claim_id][
+                    "restoration_failure_outcome_success"
+                ]
+            ),
+            "failure_or_refusal_events": [
+                _compact(event)
+                for event in non_target_failure_events
+                if _event_claim_id(event) == claim_id
+            ],
+        }
+        for claim_id in non_targets
+    }
+    non_targets_restored_or_not_failed = all(
+        status["observation_success"] or not status["failure_or_refusal_events"]
+        for status in non_target_claim_status.values()
+    )
+    non_target_failure_or_refusal_attribution = any(
+        status["failure_or_refusal_events"]
+        for status in non_target_claim_status.values()
+    )
+
+    missing = []
+    if not target_eval.restoration_failure_outcome_success:
+        missing.append("target_claim_failure_outcome_gate")
+    if not target_scheduler_restoration_failed:
+        missing.append("scheduler_resident_claim_restoration_failed_target")
+    if not target_scheduler_refusals:
+        missing.append("scheduler_active_request_refused_target")
+    if not scheduler_events_only_target:
+        missing.append("scheduler_failure_events_name_only_target")
+    if not blocking_claim_ids_only_target:
+        missing.append("blocking_claim_ids_name_only_target")
+    if non_target_failure_or_refusal_attribution:
+        missing.append("non_target_failure_or_refusal_attribution")
+    if not non_targets_restored_or_not_failed:
+        missing.append("non_target_restore_success_or_not_failed")
+
+    summary = {
+        "schema_version": 1,
+        "gate": "multi_claim_scheduler_boundary_attribution",
+        "target_claim_id": target,
+        "non_target_claim_ids": non_targets,
+        "missing_requirements": sorted(set(missing)),
+        "target_failure_outcome_gate": target_eval.restoration_failure_outcome_success,
+        "target_scheduler_restoration_failed_count": len(
+            target_scheduler_restoration_failed
+        ),
+        "target_scheduler_refusal_count": len(target_scheduler_refusals),
+        "scheduler_events_only_target": scheduler_events_only_target,
+        "blocking_claim_ids_only_target": blocking_claim_ids_only_target,
+        "non_targets_restored_or_not_failed": non_targets_restored_or_not_failed,
+        "non_target_failure_or_refusal_attribution": (
+            non_target_failure_or_refusal_attribution
+        ),
+        "target_gate_summary": target_eval.gate_summary,
+        "non_target_claim_status": non_target_claim_status,
+        "scheduler_failure_events": [
+            _compact(event) for event in scheduler_failure_events
+        ],
+        "claim_boundary": (
+            "Attribution control over local patched pydev vLLM "
+            "OffloadingConnector plus scheduler-side invalid-KV-load boundary "
+            "events only; not upstream ResidentClaim support, production "
+            "offload performance, or pre-admission refusal."
+        ),
+    }
+    analyzer_runtime_ns = time.perf_counter_ns() - start
+    return MultiClaimAttributionEvaluation(
+        gate_summary=summary,
+        event_counts=counts,
+        analyzer_runtime_ns=analyzer_runtime_ns,
+    )
+
+
 def event_counts(events: Iterable[Event]) -> dict[str, int]:
     event_list = list(events)
     return {
@@ -353,9 +536,40 @@ def _first_claim_id(events: list[Event]) -> str | None:
     return None
 
 
+def _claim_identity_ambiguities(events: list[Event]) -> dict[str, list[str]]:
+    stable_identity_fields = (
+        "predicate_id",
+        "prefix_id",
+        "reusable_object_id",
+        "cache_identity",
+        "request_token_map_id",
+    )
+    ambiguous: dict[str, list[str]] = {}
+    for field in stable_identity_fields:
+        values = sorted(
+            {
+                json.dumps(event[field], sort_keys=True)
+                if isinstance(event[field], (dict, list))
+                else str(event[field])
+                for event in events
+                if event.get(field) not in (None, "")
+            }
+        )
+        if len(values) > 1:
+            ambiguous[field] = values
+    return ambiguous
+
+
 def _event_claim_id(event: Event) -> str | None:
     claim_id = event.get("claim_id") or event.get("resident_claim_id")
     return str(claim_id) if claim_id else None
+
+
+def _blocking_claim_ids(event: Event) -> list[str]:
+    value = event.get("blocking_claim_ids")
+    if not isinstance(value, list):
+        return []
+    return sorted(str(item) for item in value)
 
 
 def _first_event(

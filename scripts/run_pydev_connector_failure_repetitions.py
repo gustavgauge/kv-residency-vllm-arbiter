@@ -45,6 +45,7 @@ DEFAULT_TARGETS = {
     "unclaimed_load_failure": 10,
     "fallback_recompute": 10,
     "generic_counter_only": 1,
+    "multi_claim_targeted_failure": 3,
 }
 
 
