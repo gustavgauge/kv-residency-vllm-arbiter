@@ -13,9 +13,17 @@ and attributable under active KV pressure. It is a conformance/litmus artifact,
 not a production vLLM fork, not a speedup benchmark, and not a claim that
 upstream vLLM implements ResidentClaims.
 
-The maintainer-facing entry points are:
+Start with the spec before the traces.
 
-- `docs/contract.md`: the ResidentClaim contract and action vocabulary;
+## Spec / Contract
+
+The contract is defined in [`docs/contract.md`](docs/contract.md). It names the
+active/resident inequality, ResidentClaim objects, future-reuse admission,
+protection modes, and required arbiter actions. Use it as the first file when
+mapping this artifact onto another runtime.
+
+The supporting evidence entry points are:
+
 - `artifacts/conformance/README.md`: generated conformance summary;
 - `patches/vllm_prototype_notes.md`: prototype boundary and changed files;
 - `artifacts/live_scheduler_pressure/summary.json`: scheduler-path pressure
