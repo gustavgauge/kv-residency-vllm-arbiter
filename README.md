@@ -6,6 +6,21 @@ minimal vLLM prototype, litmus tests, generated traces, and analysis scripts for
 checking whether future KV reuse is exposed as an accepted runtime claim rather
 than only as an eviction hint.
 
+## For Runtime Maintainers
+
+This artifact checks whether accepted future-reuse KV state remains observable
+and attributable under active KV pressure. It is a conformance/litmus artifact,
+not a production vLLM fork, not a speedup benchmark, and not a claim that
+upstream vLLM implements ResidentClaims.
+
+The maintainer-facing entry points are:
+
+- `docs/contract.md`: the ResidentClaim contract and action vocabulary;
+- `artifacts/conformance/README.md`: generated conformance summary;
+- `patches/vllm_prototype_notes.md`: prototype boundary and changed files;
+- `artifacts/live_scheduler_pressure/summary.json`: scheduler-path pressure
+  evidence.
+
 The central question is simple:
 
 ```text
@@ -58,16 +73,22 @@ tests/                      # fast regression tests
 
 ## Quick Start
 
-Run the pure Python checks:
+### No Patched vLLM Required
+
+These commands check the local Python helpers and expected semantic matrix. They
+do not import vLLM.
 
 ```bash
 uv run --with pytest pytest -q
-python scripts/check_env.py
-python scripts/generate_expected_matrix.py
+uv run python scripts/check_env.py
+uv run python scripts/generate_expected_matrix.py
 ```
 
-The vLLM-backed probes require a Python environment that imports the patched
-vLLM prototype. Configure it explicitly:
+### Patched vLLM Required
+
+The checked-in `artifacts/` directory is the public evidence bundle.
+Regenerating vLLM-backed traces requires a Python environment that imports the
+patched vLLM prototype. Configure it explicitly:
 
 ```bash
 export VLLM_AUDIT_PYTHON=/path/to/python-with-patched-vllm
@@ -81,7 +102,11 @@ The companion vLLM branch should be named:
 resident-kv-claims-vllm-prototype
 ```
 
-## Regenerate Artifacts
+## Regenerate vLLM-Backed Artifacts
+
+Run these only after configuring `VLLM_AUDIT_PYTHON` for the patched vLLM
+prototype. Without that runtime, the BlockPool and scheduler probes will fail to
+import `vllm`.
 
 ```bash
 make native-blockpool-probe
@@ -113,6 +138,19 @@ not rely on a speedup claim.
   trace with protected resident headroom affecting active request handling.
 - `artifacts/prior_art/prior_art_boundary.md`: semantic comparison against
   adjacent runtime primitives.
+
+## What Would Change This Artifact
+
+This artifact should change if a runtime exposes a native path, event, or
+invariant that provides the obligations the contract requires:
+
+- accepted claim identity;
+- a materialization predicate for useful future reuse;
+- ordered lifecycle events;
+- a claim-scoped refusal, failure, demotion, expiry, or harm outcome under
+  active/resident pressure.
+
+Corrections to the boundary are useful. General endorsements are not required.
 
 ## Scope
 
